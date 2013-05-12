@@ -89,11 +89,7 @@ class Stabilates extends DBase {
       elseif(OPTIONS_REQUESTED_MODULE == 'logout') $this->LogOutCurrentUser();
       elseif(OPTIONS_REQUESTED_MODULE == 'login')  $this->ValidateUser();
       elseif(OPTIONS_REQUESTED_MODULE == 'home') $this->StabilatesHomePage();
-      elseif(OPTIONS_REQUESTED_MODULE == 'lab_tests'){
-         require_once 'mod_lab_tests.php';
-         $Lab = new LabTests();
-         $Lab->TrafficController();
-      }
+      elseif(OPTIONS_REQUESTED_MODULE == 'stabilates') $this->BrowseStabilates();
       elseif(OPTIONS_REQUESTED_MODULE == 'patients'){
          require_once 'mod_patients.php';
          $Patient = new Patients();
@@ -382,6 +378,15 @@ class Stabilates extends DBase {
       readfile($ofile);
       unlink($ofile);
       die();
+   }
+
+   private function BrowseStabilates(){
+?>
+<div class='stabilates'></div>
+<div class='passages'></div>
+<div class='preservation'></div>
+<div class='strains'></div>
+<?php
    }
 }
 ?>
