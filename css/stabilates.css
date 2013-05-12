@@ -7,28 +7,12 @@ html{
 }
 
 body {
-    font-family:Arial, Helvetica, sans-serif;
-    margin: 0;
-    padding: 0;
-    font-size: 76%;
     color: #000000;
     background-color:#f1f1f1;
 }
 
 -moz-any-link:focus {
   border: none;
-}
-
-input[type='text'], input[type='password']{
-   border-color: #CDCDCD;
-   border-style: inset;
-   -moz-border-radius: 3px;
-   -webkit-border-radius: 4px;
-   border-radius: 4px;
-   padding: 1px 0px;
-   border-width: 2px;
-   box-shadow: none;
-   margin: 3px 0px;
 }
 
 #addinfo, #top_tip{
@@ -93,6 +77,15 @@ input[type='text'], input[type='password']{
 }
 /* Login Page*/
 
+.home, .back_link{
+   float: left;
+   margin-right: 5px;
+}
+
+#top_links{
+   padding: 0px 5px;
+}
+
 #whoisme {
     font-style: italic;
     text-align: right;
@@ -110,3 +103,66 @@ input[type='text'], input[type='password']{
    font-size: 1em;
    text-align: center;
 }
+
+#stabilates .left{
+   float: left;
+   width: 25%;
+   margin: 0px;
+}
+
+#stabilates .center{
+   float: left;
+   width: 25%;
+   margin: 0px 0px 0px 5%;
+}
+
+#stabilates .right{
+   width: 25%;
+   margin: 0px 0px 0px 65%
+}
+
+#stabilates textarea{
+   width: 295px;
+   height: 180px;
+}
+
+fieldset{
+   border-bottom: 1px dotted black;
+   margin: 15px 0px;
+}
+
+#footer_links{
+   text-align: center;
+}
+
+.form-horizontal .strain{
+   border: none;
+}
+/**************************Bootstrap changes***************************/
+select, textarea, input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input{
+   height: 30px;
+}
+
+.form-horizontal .control-label{
+   width: 110px;
+}
+
+.form-horizontal .controls{
+   margin-left: 120px;
+}
+
+.form-horizontal .control-group{
+   margin-bottom: 5px;
+}
+
+.form-horizontal .nav{
+   text-align: center;
+   margin-left: 35%;
+   width: 40%;
+}
+
+.form-horizontal .nav li{
+   float: left;
+   margin: 5px;
+}
+/**************************Bootstrap changes***************************/

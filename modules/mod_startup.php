@@ -39,6 +39,19 @@ define('OPTIONS_REQUEST_TYPE', $requestType);
 require_once 'modules/mod_stabilates_general.php';
 $Stabilates = new Stabilates();
 
+//lets initiate the sessions
+session_save_path(Config::$config['dbase']);
+session_name('knhStabilates');
+$res = $Stabilates->Dbase->SessionStart();
+if($res == 1) {
+   $Stabilates->error = true;
+   ob_start();
+   $Stabilates->LoginPage($Stabilates->Dbase->lastError);
+   $Stabilates->errorPage = ob_get_contents();
+   ob_end_clean();
+   return;
+}
+
 //log all the requests
 $Stabilates->Dbase->CreateLogEntry("\n\n".  str_repeat('=', 140)."\nNew Request:\n", 'audit');
 $Stabilates->Dbase->CreateLogEntry("POST User request: \n".print_r($_POST, true), 'audit');

@@ -84,7 +84,7 @@ class Stabilates extends DBase {
       }
 
       //Set the default footer links
-      $this->footerLinks = "<a href='?page=home'>Home</a>";
+      $this->footerLinks = "";
       if(OPTIONS_REQUESTED_MODULE == '') $this->LoginPage();
       elseif(OPTIONS_REQUESTED_MODULE == 'logout') $this->LogOutCurrentUser();
       elseif(OPTIONS_REQUESTED_MODULE == 'login')  $this->ValidateUser();
@@ -247,7 +247,7 @@ class Stabilates extends DBase {
       Config::$curUser = "{$_SESSION['surname']} {$_SESSION['onames']}, {$_SESSION['user_type']}";
       if(OPTIONS_REQUEST_TYPE == 'normal')
          echo "<div id='top_links'>
-         <div class='back_link'>Back</div>
+         <div class='home'><a href='?page=home'>Home</a></div><div class='back_link'>Back</div>
          <div id='whoisme'>{$_SESSION['surname']} {$_SESSION['onames']}, {$_SESSION['user_type']}&nbsp;&nbsp;<a href='?page=logout'>Log Out</a>, <a href='documentation.html'>Help</a></div>
         </div>\n";
       return 0;
@@ -381,11 +381,355 @@ class Stabilates extends DBase {
    }
 
    private function BrowseStabilates(){
+      $error = '';
+
+      //hosts
+      $query = "select id, host_name from hosts";
+      $res = $this->Dbase->ExecuteQuery($query);
+      if($res != 1){
+         $ids=array(); $vals=array();
+         foreach($res as $t){
+            $ids[]=$t['id']; $vals[]=$t['host_name'];
+         }
+         $settings = array('items' => $vals, 'values' => $ids, 'firstValue' => 'Select One', 'name' => 'host_name', 'id' => 'hostId');
+         $hostCombo = GeneralTasks::PopulateCombo($settings);
+      }
+      else $error = $this->Dbase->lastError;
+
+      //locality
+      $query = "select locality from stabilates group by locality";
+      $res = $this->Dbase->ExecuteQuery($query);
+      if($res != 1){
+         $vals = array();
+         foreach($res as $t) $vals[]=$t['locality'];
+         $settings = array('items' => $vals, 'firstValue' => 'Select One', 'name' => 'locality', 'id' => 'localityId');
+         $localityCombo = GeneralTasks::PopulateCombo($settings);
+      }
+      else $error = $this->Dbase->lastError;
+
+      //variable antigen
+      $query = "select id, antigen from variable_antigen";
+      $res = $this->Dbase->ExecuteQuery($query);
+      if($res != 1){
+         $ids=array(); $vals=array();
+         foreach($res as $t){
+            $ids[]=$t['id']; $vals[]=$t['antigen'];
+         }
+         $settings = array('items' => $vals, 'values' => $ids, 'firstValue' => 'Select One', 'name' => 'host_name', 'id' => 'hostId');
+         $variableAntigenCombo = GeneralTasks::PopulateCombo($settings);
+      }
+      else $error = $this->Dbase->lastError;
+
+      //locality
+      $query = "select infection_host from stabilates group by infection_host";
+      $res = $this->Dbase->ExecuteQuery($query);
+      if($res != 1){
+         $vals = array();
+         foreach($res as $t) $vals[]=$t['infection_host'];
+         $settings = array('items' => $vals, 'firstValue' => 'Select One', 'name' => 'infection_host', 'id' => 'infectionHostId');
+         $infectionHostCombo = GeneralTasks::PopulateCombo($settings);
+      }
+      else $error = $this->Dbase->lastError;
+
+      //parasites
+      $query = "select id, parasite_name from parasites";
+      $res = $this->Dbase->ExecuteQuery($query);
+      if($res != 1){
+         $ids=array(); $vals=array();
+         foreach($res as $t){
+            $ids[]=$t['id']; $vals[]=$t['parasite_name'];
+         }
+         $settings = array('items' => $vals, 'values' => $ids, 'firstValue' => 'Select One', 'name' => 'host_name', 'id' => 'hostId');
+         $parasitesCombo = GeneralTasks::PopulateCombo($settings);
+      }
+      else $error = $this->Dbase->lastError;
+
+      //isolation method
+      $query = "select isolation_method from stabilates group by isolation_method";
+      $res = $this->Dbase->ExecuteQuery($query);
+      if($res != 1){
+         $vals = array();
+         foreach($res as $t) $vals[]=$t['isolation_method'];
+         $settings = array('items' => $vals, 'firstValue' => 'Select One', 'name' => 'isolation_method', 'id' => 'isolationMethodId');
+         $isolationMethodCombo = GeneralTasks::PopulateCombo($settings);
+      }
+      else $error = $this->Dbase->lastError;
+
+      //preserved types
+      $vals = array('Capilaries', 'Vials');
+      $settings = array('items' => $vals, 'firstValue' => 'Select One', 'name' => 'preservedType', 'id' => 'preservedTypeId');
+      $preservedTypeCombo = GeneralTasks::PopulateCombo($settings);
+
+      //isolation method
+      $query = "select frozen_by from stabilates group by frozen_by";
+      $res = $this->Dbase->ExecuteQuery($query);
+      if($res != 1){
+         $vals = array();
+         foreach($res as $t) $vals[]=$t['frozen_by'];
+         $settings = array('items' => $vals, 'firstValue' => 'Select One', 'name' => 'frozen_by', 'id' => 'frozenById');
+         $frozenByCombo = GeneralTasks::PopulateCombo($settings);
+      }
+      else $error = $this->Dbase->lastError;
+
+      //preservation method
+      $query = "select freezing_method from stabilates group by freezing_method";
+      $res = $this->Dbase->ExecuteQuery($query);
+      if($res != 1){
+         $vals = array();
+         foreach($res as $t) $vals[]=$t['freezing_method'];
+         $settings = array('items' => $vals, 'firstValue' => 'Select One', 'name' => 'freezing_method', 'id' => 'freezingMethodId');
+         $freezingMethodCombo = GeneralTasks::PopulateCombo($settings);
+      }
+      else $error = $this->Dbase->lastError;
+
+      if($error != ''){
+         $this->StabilatesHomePage($error);
+         return;
+      }
 ?>
-<div class='stabilates'></div>
-<div class='passages'></div>
-<div class='preservation'></div>
-<div class='strains'></div>
+<link rel="stylesheet" href="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/styles/jqx.base.css" type="text/css" />
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxcore.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxcalendar.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxdatetimeinput.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/globalization/jquery.global.js"></script>
+<form class='form-horizontal'>
+<fieldset class='stabilates'>
+   <legend>Stabilates</legend>
+   <div class='left'>
+      <div class="control-group">
+         <label class="control-label" for="stabilateNo">Stabilate</label>
+         <div class="controls">
+            <input type="text" id="stabilateNo" placeholder="Stabilate" class='input-medium'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="hostId">Host</label>
+         <div class="controls">
+            <?php echo $hostCombo; ?>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="localityId">Locality</label>
+         <div class="controls">
+            <?php echo $localityCombo; ?>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="date">Date</label>
+         <div class="controls">
+            <div id='collection_date'></div>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="isolatedBy">Isolated By</label>
+         <div class="controls">
+            <input type="text" id="isolatedBy" placeholder="Isolated By" class='input-medium'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="varAntigen">Var. Antigen</label>
+         <div class="controls">
+            <?php echo $variableAntigenCombo; ?>
+         </div>
+      </div>
+   </div>
+
+   <div class='center'>
+      <div class="control-group">
+         <label class="control-label" for="parentStabilate">Parent Stabilate</label>
+         <div class="controls">
+            <input type="text" id="parentStabilate" placeholder="Parent" class='input-medium'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="hostInfection">Infection in Host</label>
+         <div class="controls">
+            <?php echo $infectionHostCombo; ?>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="parasite">Parasite</label>
+         <div class="controls">
+            <?php echo $parasitesCombo; ?>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="hostNo">Host No.</label>
+         <div class="controls">
+            <input type="text" id="hostNo" placeholder="Host No." class='input-medium'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="expNo">Experiment No.</label>
+         <div class="controls">
+            <input type="text" id="expNo" placeholder="Experiment No." class='input-medium'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="isolationMethod">Isolation Method</label>
+         <div class="controls">
+            <?php echo $isolationMethodCombo; ?>
+         </div>
+      </div>
+
+   </div>
+
+   <div class='right'>
+      <label class="text-center">Stabilate Comments</label>
+      <textarea rows="5" width="300px" height="170px"></textarea>
+   </div>
+  </fieldset>
+
+<fieldset class='passages'>
+   <legend>Passages</legend>
+   <div class='left'>
+      <div class="control-group">
+         <label class="control-label" for="passageNo">Passage No</label>
+         <div class="controls">
+            <input type="text" id="passageNo" placeholder="Passage No" class='input-mini'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="inoculumType">Inoculum Type</label>
+         <div class="controls">
+            <input type="text" id="inoculumType" placeholder="Inoculum Type" class='input-medium'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="inoculumSource">Inoculum Source</label>
+         <div class="controls">
+            <input type="text" id="inoculumSource" placeholder="Inoculum Source" class='input-medium'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="radiationFreq">Radiation Freq.</label>
+         <div class="controls">
+            <input type="text" id="radiationFreq" placeholder="Freq" class='input-mini'>
+         </div>
+      </div>
+   </div>
+   <div class='center'>
+      <div class="control-group">
+         <label class="control-label" for="infectedSpecies">Infected Species</label>
+         <div class="controls">
+            <input type="text" id="infectedSpecies" placeholder="Infected Species" class='input-medium'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="infectedDays">Infected Days</label>
+         <div class="controls">
+            <input type="text" id="infectedDays" placeholder="Days" class='input-mini'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="noOfInfectedSpecies">Infected Species</label>
+         <div class="controls">
+            <input type="text" id="noOfInfectedSpecies" placeholder="Count" class='input-mini'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="radiation_date">Radiation Date</label>
+         <div class="controls">
+            <div id='radiation_date'></div>
+         </div>
+      </div>
+   </div>
+   <div class='right'>
+      <label class="text-center">Passage Comments</label>
+      <textarea id="passageComments" rows="5" width="300px" height="170px"></textarea>
+   </div>
+
+   <ul class="nav nav-list">
+      <li><button class="btn btn-medium btn-primary" type="button">Save Passages</button></li>
+      <li><button class="btn btn-medium btn-primary" type="button">Cancel</button></li>
+   </ul>
+</fieldset>
+
+<fieldset class='preservation'>
+   <legend>Preservation</legend>
+   <div>
+      <div class="control-group left">
+         <label class="control-label" for="presDate">Preservation Date</label>
+         <div class="controls">
+            <div id='preservation_date'></div>
+         </div>
+      </div>
+      <div class="control-group" style='margin-left: 5%; float: left;'>
+         <label class="control-label" for="preservedNo">No. Preserved</label>
+         <div class="controls">
+            <input type="text" id="preservedNo" placeholder="Count" class='input-mini'>
+         </div>
+      </div>
+      <div class="control-group" style='margin-left: 5%;'>
+         <label class="control-label" for="preservedType">Preserved Type</label>
+         <div class="controls">
+            <?php echo $preservedTypeCombo; ?>
+         </div>
+      </div>
+   </div>
+   <div>
+      <div class="control-group left">
+         <label class="control-label" for="preservedBy" style='width:85px;'>Preserved By</label>
+         <div class="controls" style='margin-left:95px;'>
+            <?php echo $frozenByCombo; ?>
+         </div>
+      </div>
+      <div class="control-group" style='margin-left: 18%; float: left; width:50%;'>
+         <label class="control-label" for="preservationMethod" style='width:135px;'>Preservation Method</label>
+         <div class="controls" style='margin-left:15px;'>
+            <?php echo $freezingMethodCombo; ?>
+         </div>
+      </div>
+   </div>
+</fieldset>
+
+<fieldset class='strain'>
+   <legend>Strain Data</legend>
+      <div class="control-group">
+         <label class="control-label" for="strainCount" style='width:125px;'>Strain Count</label>
+         <div class="controls">
+            <input type="text" id="strainCount" placeholder="Strain Count" class='input-xxlarge' style='margin-left:15px;'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="strainMorphology" style='width:125px;'>Strain Morphology</label>
+         <div class="controls">
+            <input type="text" id="strainMorphology" placeholder="Strain Morphology" class='input-xxlarge' style='margin-left:15px;'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="strainInfectivity" style='width:125px;'>Strain Infectivity</label>
+         <div class="controls">
+            <input type="text" id="strainInfectivity" placeholder="Strain Infectivity" class='input-xxlarge' style='margin-left:15px;'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label" for="strainPathogenicity" style='width:125px;'>Strain Pathogenicity</label>
+         <div class="controls">
+            <input type="text" id="strainPathogenicity" placeholder="Strain Pathogenicity" class='input-xxlarge' style='margin-left:15px;'>
+         </div>
+      </div>
+</fieldset>
+
+<div id='footer_links'>
+   <button class="btn btn-medium btn-primary" type="button">Save</button>
+   <button class="btn btn-medium btn-primary" type="button">Cancel</button>
+</div>
+</form>
+
+<script type='text/javascript'>
+$(document).ready(function () {
+   var date_inputs = ['collection_date', 'radiation_date', 'preservation_date'];
+   $.each(date_inputs, function(i, dateInput){
+      $('#'+ dateInput).jqxDateTimeInput({ width: '150px', height: '25px', theme: Main.theme,
+         minDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1960, 0, 1)),
+         maxDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1990, 0, 1)),
+         value: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1900, 0, 1))
+      });
+   });
+
+});
+</script>
 <?php
    }
 }

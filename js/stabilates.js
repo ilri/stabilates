@@ -1,4 +1,6 @@
-var Main = {};
+var Main = {
+   theme: ''
+};
 
 var Stabilates = {
    submitLogin: function(){
