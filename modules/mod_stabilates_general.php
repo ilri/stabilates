@@ -169,14 +169,7 @@ class Stabilates extends DBase {
     */
    public function StabilatesHomePage($addinfo = ''){
       //include the samples functions if need be
-      if(OPTIONS_REQUEST_TYPE == 'normal'){
-         echo "<script type='text/javascript' src='js/samples.js'></script>";
-      }
       if($_SESSION['user_type'] == 'Super Administrator') $this->SysAdminsHomePage($addinfo);
-      elseif($_SESSION['user_type'] == 'Laboratory Manager') $this->LabManagerHomePage($addinfo);
-      elseif($_SESSION['user_type'] == 'Laboratory Technologist') $this->LabTechnologistHomePage($addinfo);
-      elseif($_SESSION['user_type'] == 'Laboratory Clerk') $this->LabClerkHomePage($addinfo);
-      elseif($_SESSION['user_type'] == 'Student') $this->StudentHomePage($addinfo);
       echo "<script type='text/javascript'>$('.back_link').html('&nbsp;');</script>";
    }
 
