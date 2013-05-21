@@ -6,5 +6,5 @@
  */
 require_once 'modules/mod_startup.php';
 
-$Lis->TrafficController();
+$Stabilates->TrafficController();
 ?>
