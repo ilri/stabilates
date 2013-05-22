@@ -96,6 +96,7 @@ class Stabilates extends DBase {
 
          if(isset($_GET['query'])) $this->FetchData();
          elseif(OPTIONS_REQUESTED_ACTION == 'save') $this->SaveStabilates();
+         elseif(OPTIONS_REQUESTED_ACTION == 'save_passage') $this->SavePassages();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'browse') $this->BrowseStabilates();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'fetch') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'passages') $this->FetchData();
@@ -297,7 +298,7 @@ class Stabilates extends DBase {
    private function SysAdminsHomePage($addinfo = ''){
       $addinfo = ($addinfo == '') ? '' : "<div id='addinfo'>$addinfo</div>" ;
 ?>
-<div>
+<div id="home">
    <h2 class='center'>Super Administrator Home Page</h2>
    <?php echo $addinfo; ?>
    <ul>
@@ -349,6 +350,7 @@ class Stabilates extends DBase {
       if($settings['formatResult'] == '') $settings['formatResult'] = 'Stabilates.fnFormatResult';
       if($settings['visibleSuggestions'] == '') $settings['visibleSuggestions'] = true;
       if($settings['beforeNewQuery'] == '') $settings['beforeNewQuery'] = 'undefined';
+      if(!isset($settings['selectFunction'])) $settings['selectFunction'] = 'function(){}';
 ?>
 <script type='text/javascript'>
    //bind the search to autocomplete
@@ -526,9 +528,20 @@ class Stabilates extends DBase {
       }
       else $error = $this->Dbase->lastError;
 
+      //inoculum types
+      $query = "select id, inoculum_name from inoculum order by inoculum_name";
+      $res = $this->Dbase->ExecuteQuery($query);
+      if($res != 1){
+         $ids=array(); $vals=array();
+         foreach($res as $t){
+            $ids[]=$t['id']; $vals[]=$t['inoculum_name'];
+         }
+         $settings = array('items' => $vals, 'values' => $ids, 'firstValue' => 'Select One', 'name' => 'inoculumType', 'id' => 'inoculumTypeId');
+         $inoculumTypeCombo = GeneralTasks::PopulateCombo($settings);
+      }
+      else $error = $this->Dbase->lastError;
+
       //inoculum source
-      $settings = array('items' => array('Stabilate', 'Passage', 'Host'), 'firstValue' => 'Select One', 'name' => 'inoculumType', 'id' => 'inoculumTypeId');
-      $inoculumTypeCombo = GeneralTasks::PopulateCombo($settings);
 
       if($error != ''){
          $this->StabilatesHomePage($error);
@@ -571,9 +584,9 @@ class Stabilates extends DBase {
          </div>
       </div>
       <div class="control-group">
-         <label class="control-label" for="date">Date</label>
+         <label class="control-label" for="isolation_date">Date</label>
          <div class="controls">
-            <div id='collection_date'></div>
+            <div id='isolation_date'></div>
          </div>
       </div>
       <div class="control-group">
@@ -658,7 +671,7 @@ class Stabilates extends DBase {
       </div>
       <div class="control-group">
          <label class="control-label" for="inoculumSource">Inoculum Source</label>
-         <div class="controls">
+         <div class="controls" id="inoculumTypeContainter">
             <span>Select the inoculum type</span>
          </div>
       </div>
@@ -700,8 +713,8 @@ class Stabilates extends DBase {
       <textarea id="passageComments" rows="5" width="300px" height="170px"></textarea>
    </div>
 
-   <ul class="nav nav-list">
-      <li><button class="btn btn-medium btn-primary passage_save" type="button">Save Passages</button></li>
+   <ul class="nav nav-list" id="passage_actions">
+      <li><button class="btn btn-medium btn-primary passage_save" type="button">Save Passage</button></li>
       <li><button class="btn btn-medium btn-primary passage_cancel" type="button">Cancel</button></li>
    </ul>
 </div>
@@ -785,9 +798,9 @@ class Stabilates extends DBase {
 
 <script type='text/javascript'>
 $(document).ready(function () {
-   var date_inputs = ['collection_date', 'radiation_date', 'preservation_date'];
+   var date_inputs = ['isolation_date', 'radiation_date', 'preservation_date'];
    $.each(date_inputs, function(i, dateInput){
-      $('#'+ dateInput).jqxDateTimeInput({ width: '150px', height: '25px', theme: Main.theme,
+      $('#'+ dateInput).jqxDateTimeInput({ width: '150px', height: '25px', theme: Main.theme, formatString: "yyyy-MM-dd",
          minDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1960, 0, 1)),
          maxDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1990, 0, 1)),
          value: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1900, 0, 1))
@@ -798,6 +811,12 @@ $(document).ready(function () {
    Stabilates.initiatePassageDetails();
 
    $('#passages_tab').jqxTabs({ width: '100%', height: 310, position: 'top', theme: Main.theme });
+   $('#passages_tab').live('selecting', function (event) {
+      if(event.args.item === 1){
+         //we have selected the passages tab... reload the data
+         Stabilates.initiatePassageDetails(Main.curStabilateId);
+      }
+   });
    $('#stabilateNo').focus();
    Main.passagesValidation = <?php echo json_encode(Config::$passageValidation); ?>;
    Main.stabilatesValidation = <?php echo json_encode(Config::$stabilatesValidation); ?>;
@@ -807,12 +826,16 @@ $(document).ready(function () {
       $this->AutoCompleteFiles();
       $settings = array('inputId' => 'stabilateNo', 'reqModule' => 'stabilates', 'reqSubModule' => 'browse', 'selectFunction' => 'Stabilates.fillStabilatesData');
       $this->InitiateAutoComplete($settings);
+
+      $settings = array('inputId' => 'parent_stabilate', 'reqModule' => 'stabilates', 'reqSubModule' => 'browse');
+      $this->InitiateAutoComplete($settings);
    }
 
    /**
     * Fetches different data for use by the clients
     */
    private function FetchData(){
+      $vals = array();
       if(isset($_GET['query'])){
          $query = 'select * from stabilates where stab_no like :query';
          $res = $this->Dbase->ExecuteQuery($query, array('query' => "%{$_GET['query']}%"));
@@ -825,17 +848,10 @@ $(document).ready(function () {
          $data = array('error' => false, 'query' => $_GET['query'], 'suggestions' => $suggestions, 'data' => $data);
          die(json_encode($data));
       }
-      elseif(OPTIONS_REQUESTED_ACTION == 'Stabilate'){
-         $res = $this->Dbase->ExecuteQuery('select id, stab_no as name from stabilates');
-         if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
-         $data = array('error' => false, 'data' => $data);
-         die(json_encode($data));
-      }
       elseif(OPTIONS_REQUESTED_SUB_MODULE == 'passages' && OPTIONS_REQUESTED_ACTION == 'browse'){
          if(!isset($_POST['stabilate_id'])) die('{"data":'. json_encode(array()) .'}');
-         $query = 'select a.*, b.inoculum_name, c.species_name, d.source_name, concat(a.infection_duration, " days") as idays, a.number_of_species as no_infected
+         $query = 'select a.*, b.inoculum_name, c.species_name, concat(a.infection_duration, " days") as idays, a.number_of_species as no_infected, radiation_freq as rfreq, radiation_date as rdate, passage_comments as comments
             from passages as a inner join inoculum as b on a.inoculum_type=b.id
-            inner join inoculum_sources as d on a.inoculum_source=d.id
             inner join infected_species as c on a.infected_species=c.id
             where a.stabilate_ref = :stabilate_ref order by a.passage_no';
          $res = $this->Dbase->ExecuteQuery($query, array('stabilate_ref' => $_POST['stabilate_id']));
@@ -844,12 +860,13 @@ $(document).ready(function () {
          die('{"data":'. json_encode($res) .'}');
       }
       elseif(OPTIONS_REQUESTED_ACTION == 'Passage'){
-         $query = "select id";
+         $query = "select id, concat('Passage ', passage_no) as name from passages where stabilate_ref=:stabilate_ref";
+         $vals['stabilate_ref'] = $_POST['stabilate_ref'];
       }
       elseif(OPTIONS_REQUESTED_ACTION == 'Host'){
          $query = "select id, source_name as name from sources order by source_name";
       }
-      $res = $this->Dbase->ExecuteQuery($query);
+      $res = $this->Dbase->ExecuteQuery($query, $vals);
       if($res != 1){
          die(json_encode(array('error' => false, 'data' => $res)));
       }
@@ -866,16 +883,178 @@ $(document).ready(function () {
 
    private function SaveStabilates(){
       $dt = json_decode($_POST['cur_stabilate'], true);
-      $this->Dbase->CreateLogEntry('<pre>'. print_r($dt, true) .'</pre>', 'debug');
-      $cols = array();
-      $colvals = array();
+//      $this->Dbase->CreateLogEntry('<pre>'. print_r($dt, true) .'</pre>', 'debug');
+      $errors = array();
+      $set = array();
+      $vals = array();
+      $insert_vals = array();
+      $insert_cols = array();
+
+      //run the input validation
+      foreach(Config::$stabilatesValidation as $cur){
+         //get the current selector. The selector can either be the element id or element name for this particular input
+         if(isset($dt[$cur['id']])) $selector = $cur['id'];
+         elseif(isset($dt[$cur['name']])) $selector = $cur['name'];
+         //get the current value based on the current selector
+         $cur_val = $dt[$selector];
+
+         if($cur_val != '' && !in_array($cur_val, $cur['defaultVal'])){
+            //we actually have something.... validate it
+            if(preg_match("/{$cur['valueRegex']}/", $cur_val) === 0){
+               //we have problems
+               $errors[] = $cur['wrongValMessage'];
+            }
+            else{
+               //clean bill of health, so build our update/insert query
+               $set[] = Config::$form_db_map[$selector]. "=:$selector";
+               $vals[$selector] = $cur_val;
+               $insert_vals[] = ":$selector";
+               $insert_cols[] = Config::$form_db_map[$selector];
+            }
+         }
+         else{
+            //we have nothing
+//            echo "{$cur['id']}; {$cur['name']} ==> $cur_val</br>";
+         }
+      }
+
+      if(count($errors) != 0 ) die(json_encode(array('error' => true, 'data' => implode("<br />", $errors))));
+
+      $lockQuery = "lock table stabilates write";
+      $this->Dbase->StartTrans();
       if(isset($dt['id'])){
          //we wanna update a stabilate
-
+         $vals['id'] = $dt['id'];
+         $query = 'update stabilates set '. implode(', ', $set) .' where id=:id';
       }
       else{
          //we wanna save a new stabilates
+         $query = 'insert into stabilates('. implode(', ', $insert_cols) .') values('. implode(', ', $insert_vals) .')';
       }
+      $res = $this->Dbase->UpdateRecords($query, $vals, $lockQuery);
+      if($res == 1){
+         $this->Dbase->RollBackTrans();
+         die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+      }
+      //commit the transaction and unlock the tables
+      if( !$this->Dbase->CommitTrans() ) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+      $res = $this->Dbase->ExecuteQuery("Unlock tables");
+      if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+
+      //we are all good
+      die(json_encode(array('error' => false, 'data' => 'Data saved well')));
+   }
+
+   private function SavePassages(){
+      $dt = json_decode($_POST['data'], true);
+      $errors = array();
+      $set = array();
+      $vals = array();
+      $insert_vals = array();
+      $insert_cols = array();
+
+      //run the input validation
+      foreach(Config::$passageValidation as $cur){
+         //get the current selector. The selector can either be the element id or element name for this particular input
+         if(isset($dt[$cur['id']])) $selector = $cur['id'];
+         elseif(isset($dt[$cur['name']])) $selector = $cur['name'];
+         //get the current value based on the current selector
+         $cur_val = $dt[$selector];
+
+         if($cur_val != '' && !in_array($cur_val, $cur['defaultVal'])){
+            //we actually have something.... validate it
+            if(preg_match("/{$cur['valueRegex']}/", $cur_val) === 0){
+               //we have problems
+               $errors[] = $cur['wrongValMessage'];
+            }
+            else{
+               //clean bill of health, so build our update/insert query
+               if(isset(Config::$form_db_map[$selector])){
+                  $set[] = Config::$form_db_map[$selector]. "=:$selector";
+                  $vals[$selector] = $cur_val;
+                  $insert_vals[] = ":$selector";
+                  $insert_cols[] = Config::$form_db_map[$selector];
+               }
+            }
+         }
+         else{ /*Nothing to do*/ }
+      }
+
+      //check the reference stabilate
+      $query = 'select id, stab_no from stabilates where id=:id';
+      $res = $this->Dbase->ExecuteQuery($query, array('id' => $dt['parentStabilateId']));
+      if($res == 1){
+         $this->Dbase->RollBackTrans();
+         die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+      }
+      $parentStabilate = $res[0]['id'];
+
+
+      //now lets check our inoculum source
+      $inoculum_ref = '';
+      if($dt['inoculumSource'] == 'Stabilate'){
+         //ensure that the stabilate selected is in the database
+         $query = 'select stab_no from stabilates where id=:id';
+         $res = $this->Dbase->ExecuteQuery($query, array('id' => $dt['inoculumSourceId']));
+         if($res == 1){
+            $this->Dbase->RollBackTrans();
+            die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+         }
+         $inoculum_ref = $res[0]['stab_no'];
+      }
+      elseif($dt['inoculumSource'] == 'Passage'){
+         //ensure that we have the passage that is being referred to
+         $query = 'select passage_no from passages where id=:id';
+         $res = $this->Dbase->ExecuteQuery($query, array('id' => $dt['inoculumSourceId']));
+         if($res == 1){
+            $this->Dbase->RollBackTrans();
+            die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+         }
+         $inoculum_ref = "Passage {$res[0]['passage_no']}";
+      }
+      elseif($dt['inoculumSource'] == 'Host'){
+         //ensure that the stabilate selected is in the database
+         $query = 'select source_name from sources where id=:id';
+         $res = $this->Dbase->ExecuteQuery($query, array('id' => $dt['inoculumSourceId']));
+         if($res == 1){
+            $this->Dbase->RollBackTrans();
+            die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+         }
+         $inoculum_ref = $res[0]['source_name'];
+      }
+      else{
+         die(json_encode(array('error' => true, 'data' => 'Please select a valid inoculum source.')));
+      }
+
+      if(count($errors) != 0 ) die(json_encode(array('error' => true, 'data' => implode("<br />", $errors))));
+
+
+      $lockQuery = "lock table passages write";
+      $this->Dbase->StartTrans();
+      if(isset($dt['id'])){
+         //we wanna update a stabilate
+         $vals['id'] = $dt['id'];
+         $query = 'update passages set '. implode(', ', $set) .' where id=:id';
+      }
+      else{
+         //we wanna save a new stabilates
+         $insert_cols[] = 'stabilate_ref'; $insert_vals[] = ':stabilate_ref'; $vals['stabilate_ref'] = $parentStabilate;
+         $insert_cols[] = 'inoculum_ref'; $insert_vals[] = ':inoculum_ref'; $vals['inoculum_ref'] = $inoculum_ref;
+         $query = 'insert into passages('. implode(', ', $insert_cols) .') values('. implode(', ', $insert_vals) .')';
+      }
+      $res = $this->Dbase->UpdateRecords($query, $vals, $lockQuery);
+      if($res == 1){
+         $this->Dbase->RollBackTrans();
+         die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+      }
+      //commit the transaction and unlock the tables
+      if( !$this->Dbase->CommitTrans() ) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+      $res = $this->Dbase->ExecuteQuery("Unlock tables");
+      if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+
+      //we are all good
+      $this->Dbase->RollBackTrans();
+      die(json_encode(array('error' => false, 'data' => 'Data saved well')));
    }
 }
 ?>
