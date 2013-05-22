@@ -239,6 +239,9 @@ var Stabilates = {
 
        Stabilates.colorInputWithData();
        Main.curStabilateId = data.id;
+       //for editing stabilates
+       Main.curStabilate = {};
+       Main.curStabilate.id = data.id;
        Stabilates.initiatePassageDetails(data.id);
        //show the passages tab
        $('#passages_tab').jqxTabs('select', 1);
