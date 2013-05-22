@@ -63,10 +63,6 @@ var Stabilates = {
                if(!data.error){
                   //lets clear all the fields
                   Stabilates.clearPassagesData();
-                  Main.curPassageId = undefined;
-                   $('#passage_actions').html('<li><button class="btn btn-medium btn-primary passage_save" type="button">Save Passage</button></li>\n\
-                  <li><button class="btn btn-medium btn-primary passage_cancel" type="button">Cancel</button></li>');
-                  $('#inoculumTypeContainter').html("<span>Select the inoculum type</span>");
                   Stabilates.colorInputWithData();
                }
                $('#inoculumTypeId').focus();
@@ -88,8 +84,12 @@ var Stabilates = {
           if(data.id !== undefined) $('#'+ data.id).val(data.defaultVal[0]);
           else if(data.name !== undefined) $('[name='+ data.name +']').val(data.defaultVal[0]);
        });
-       Stabilates.initiatePassageDetails();
+       Stabilates.initiatePassageDetails(undefined);
        $('#passages_tab').jqxTabs('select', 0);
+       Main.curPassageId = undefined;
+       $('#passage_actions').html('<li><button class="btn btn-medium btn-primary passage_save" type="button">Save Passage</button></li>\n\
+         <li><button class="btn btn-medium btn-primary passage_cancel" type="button">Cancel</button></li>');
+       $('#inoculumTypeContainter').html("<span>Select the inoculum type</span>");
     },
 
     clearStabilatesData: function(){
@@ -344,6 +344,7 @@ var Stabilates = {
             Notification.show({create:false, hide:true, updateText:true, text:mssg, error:data.error});
             if(!data.error){
                Stabilates.clearStabilatesData();
+               Stabilates.clearPassagesData();
                Stabilates.colorInputWithData();
                Main.curStabilate = undefined;
             }
