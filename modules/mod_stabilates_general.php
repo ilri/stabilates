@@ -911,10 +911,12 @@ $(document).ready(function () {
             }
             else{
                //clean bill of health, so build our update/insert query
-               $set[] = Config::$form_db_map[$selector]. "=:$selector";
-               $vals[$selector] = $cur_val;
-               $insert_vals[] = ":$selector";
-               $insert_cols[] = Config::$form_db_map[$selector];
+               if(!key_exists($selector, $vals)){     //some values are being picked twice and I cannot understand why! this is going to prevent
+                  $set[] = Config::$form_db_map[$selector]. "=:$selector";
+                  $vals[$selector] = $cur_val;
+                  $insert_vals[] = ":$selector";
+                  $insert_cols[] = Config::$form_db_map[$selector];
+               }
             }
          }
          else{
