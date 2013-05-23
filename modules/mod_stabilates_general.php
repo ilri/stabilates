@@ -1041,6 +1041,10 @@ $(document).ready(function () {
       if(isset($dt['id'])){
          //we wanna update a stabilate
          $vals['id'] = $dt['id'];
+         $vals['inoculum_ref'] = $inoculum_ref;
+         $vals['stabilate_ref'] = $parentStabilate;
+         $set[] = "inoculum_ref=:inoculum_ref";
+         $set[] = "stabilate_ref=:stabilate_ref";
          $query = 'update passages set '. implode(', ', $set) .' where id=:id';
       }
       else{
