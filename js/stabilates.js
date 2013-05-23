@@ -346,7 +346,7 @@ var Stabilates = {
                Stabilates.clearStabilatesData();
                Stabilates.clearPassagesData();
                Stabilates.colorInputWithData();
-               Main.curStabilate = undefined;
+               Main.curStabilate = { passages: [] };
             }
             $('#stabilateNo').focus();
          }
