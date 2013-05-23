@@ -573,13 +573,13 @@ class Stabilates extends DBase {
       <div class="control-group">
          <label class="control-label" for="stabilateNo">Stabilate</label>
          <div class="controls">
-            <input type="text" id="stabilateNo" placeholder="Stabilate" class='input-medium'>
+            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><input type="text" id="stabilateNo" placeholder="Stabilate" class='input-medium'>
          </div>
       </div>
       <div class="control-group">
          <label class="control-label" for="hostId">Host</label>
          <div class="controls">
-            <?php echo $hostCombo; ?>
+            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $hostCombo; ?>
          </div>
       </div>
       <div class="control-group">
@@ -612,19 +612,19 @@ class Stabilates extends DBase {
       <div class="control-group">
          <label class="control-label" for="parasite">Parasite</label>
          <div class="controls">
-            <?php echo $parasitesCombo; ?>
+            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $parasitesCombo; ?>
          </div>
       </div>
       <div class="control-group">
          <label class="control-label" for="hostInfection">Infection in Host</label>
          <div class="controls">
-            <?php echo $infectionHostCombo; ?>
+            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $infectionHostCombo; ?>
          </div>
       </div>
       <div class="control-group">
          <label class="control-label" for="parentStabilate">Origin Country</label>
          <div class="controls">
-            <?php echo $originCountryCombo; ?>
+            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $originCountryCombo; ?>
          </div>
       </div>
       <div class="control-group">
@@ -642,7 +642,7 @@ class Stabilates extends DBase {
       <div class="control-group">
          <label class="control-label" for="isolationMethod">Isolation Method</label>
          <div class="controls">
-            <?php echo $isolationMethodCombo; ?>
+            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $isolationMethodCombo; ?>
          </div>
       </div>
 
@@ -755,13 +755,13 @@ class Stabilates extends DBase {
       <div class="control-group left">
          <label class="control-label" for="preservedBy" style='width:85px;'>Preserved By</label>
          <div class="controls" style='margin-left:95px;'>
-            <?php echo $frozenByCombo; ?>
+            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $frozenByCombo; ?>
          </div>
       </div>
       <div class="control-group" style='margin-left: 18%; float: left; width:50%;'>
          <label class="control-label" for="preservationMethod" style='width:135px;'>Preservation Method</label>
          <div class="controls" style='margin-left:15px;'>
-            <?php echo $freezingMethodCombo; ?>
+            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $freezingMethodCombo; ?>
          </div>
       </div>
    </div>
