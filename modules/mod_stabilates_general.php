@@ -101,25 +101,10 @@ class Stabilates extends DBase {
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'fetch') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'passages') $this->FetchData();
       }
-      elseif(OPTIONS_REQUESTED_MODULE == 'patients'){
-         require_once 'mod_patients.php';
-         $Patient = new Patients();
-         $Patient->TrafficController();
-      }
       elseif(OPTIONS_REQUESTED_MODULE == 'users'){
          require_once 'mod_users.php';
-         $Users = new Users();
+         $Users = new Users($this->Dbase);
          $Users->TrafficController();
-      }
-      elseif(OPTIONS_REQUESTED_MODULE == 'settings'){
-         require_once 'mod_settings.php';
-         $Settings = new Settings();
-         $Settings->TrafficController();
-      }
-      elseif(OPTIONS_REQUESTED_MODULE == 'reports'){
-         require_once 'mod_reports.php';
-         $Reports = new Reports();
-         $Reports->TrafficController();
       }
       else{
          $this->Dbase->CreateLogEntry(print_r($_POST, true), 'debug');
@@ -178,6 +163,7 @@ class Stabilates extends DBase {
    public function StabilatesHomePage($addinfo = ''){
       //include the samples functions if need be
       if($_SESSION['user_type'] == 'Super Administrator') $this->SysAdminsHomePage($addinfo);
+      else if($_SESSION['user_type'] == 'Administrator') $this->AdminsHomePage($addinfo);
       echo "<script type='text/javascript'>$('.back_link').html('&nbsp;');</script>";
    }
 
@@ -303,6 +289,25 @@ class Stabilates extends DBase {
    <?php echo $addinfo; ?>
    <ul>
       <li><a href='?page=users&do=browse'>Users</a></li>
+      <li><a href='?page=stabilates&do=browse'>Stabilates</a></li>
+      <?php
+         echo $this->ChangeCredentialsLink();
+       ?>
+   </ul>
+</div>
+<?php
+   }
+
+   /**
+    * Creates the home page for the systems admins
+    */
+   private function AdminsHomePage($addinfo = ''){
+      $addinfo = ($addinfo == '') ? '' : "<div id='addinfo'>$addinfo</div>" ;
+?>
+<div id="home">
+   <h2 class='center'>Administrator's Home Page</h2>
+   <?php echo $addinfo; ?>
+   <ul>
       <li><a href='?page=stabilates&do=browse'>Stabilates</a></li>
       <?php
          echo $this->ChangeCredentialsLink();

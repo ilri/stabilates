@@ -1,7 +1,7 @@
 var Main = {
    passagesValidation: [], theme: '', curStabilate: { passages: [] },
    reEscape: new RegExp('(\\' + ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'].join('|\\') + ')', 'g'),
-   stabilatesValidation: []
+   stabilatesValidation: [],  ajaxParams: {}
 };
 
 var Stabilates = {
