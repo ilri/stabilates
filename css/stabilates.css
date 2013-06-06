@@ -118,9 +118,14 @@ body {
    margin: 0px 0px 0px 15px;
 }
 
-#stabilates textarea{
+#main_div .stabilates textarea, #passages_tab textarea{
    width: 295px;
    height: 180px;
+}
+
+#main_div .cultures textarea{
+   width: 600px;
+   height: 70px;
 }
 
 fieldset, .passages{

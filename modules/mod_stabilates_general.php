@@ -42,7 +42,7 @@ class Stabilates extends DBase {
                return;
             }
             //initialize the session variables
-            $_SESSION['surname'] = $res['sname']; $_SESSION['onames'] = $res['onames']; $_SESSION['user_type'] = $res['user_type'];
+            $_SESSION['surname'] = $res['sname']; $_SESSION['onames'] = $res['onames']; $_SESSION['user_level'] = $res['user_level'];
             $_SESSION['user_id'] = $res['user_id'];
          }
          else die('Permission Denied. You do not have permission to access this module');
@@ -92,6 +92,7 @@ class Stabilates extends DBase {
       elseif(OPTIONS_REQUESTED_MODULE == 'stabilates'){
          if(OPTIONS_REQUEST_TYPE == 'normal'){
             echo "<script type='text/javascript'>$('#top_links .back_link').html('<a href=\'?page=home\'>Back</a>');</script>";
+            echo "<script type='text/javascript' src='js/stabilates.js'></script>";
          }
 
          if(isset($_GET['query'])) $this->FetchData();
@@ -100,6 +101,12 @@ class Stabilates extends DBase {
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'browse') $this->BrowseStabilates();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'fetch') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'passages') $this->FetchData();
+      }
+      elseif(OPTIONS_REQUESTED_MODULE == 'cultures'){
+         require_once 'mod_cultures.php';
+         $Cultures = new Cultures($this->Dbase);
+         $Cultures->TrafficController();
+
       }
       elseif(OPTIONS_REQUESTED_MODULE == 'users'){
          require_once 'mod_users.php';
@@ -134,6 +141,7 @@ class Stabilates extends DBase {
          $addinfo .= "<br />You have had $count attempts. You have 1 more attempt to log in before your account is disabled.";
       }
 ?>
+<script type='text/javascript' src='js/stabilates.js'></script>
 <div id='main' class='login'>
    <form action="?page=login" name='login_form' method='POST'>
       <div id='login_page'>
@@ -162,8 +170,8 @@ class Stabilates extends DBase {
     */
    public function StabilatesHomePage($addinfo = ''){
       //include the samples functions if need be
-      if($_SESSION['user_type'] == 'Super Administrator') $this->SysAdminsHomePage($addinfo);
-      else if($_SESSION['user_type'] == 'Administrator') $this->AdminsHomePage($addinfo);
+      if($_SESSION['user_level'] == 'Super Administrator') $this->SysAdminsHomePage($addinfo);
+      else if($_SESSION['user_level'] == 'Administrator') $this->AdminsHomePage($addinfo);
       echo "<script type='text/javascript'>$('.back_link').html('&nbsp;');</script>";
    }
 
@@ -208,10 +216,9 @@ class Stabilates extends DBase {
             return;
          }
          //initialize the session variables
-         $_SESSION['surname'] = $res['sname']; $_SESSION['onames'] = $res['onames']; $_SESSION['user_type'] = $res['user_type'];
+         $_SESSION['surname'] = $res['sname']; $_SESSION['onames'] = $res['onames']; $_SESSION['user_level'] = $res['user_level'];
          $_SESSION['user_id'] = $res['user_id']; $_SESSION['password'] = $password; $_SESSION['username'] = $username;
          $this->WhoIsMe();
-//         print_r($_SESSION);
          $this->StabilatesHomePage();
          return;
       }
@@ -242,11 +249,12 @@ class Stabilates extends DBase {
       }
 
       //display the credentials of the person who is logged in
-      Config::$curUser = "{$_SESSION['surname']} {$_SESSION['onames']}, {$_SESSION['user_type']}";
+		$userLevel = (isset($_SESSION['user_type'])) ? $_SESSION['user_type'] : $_SESSION['user_level'];
+      Config::$curUser = "{$_SESSION['surname']} {$_SESSION['onames']}, $userLevel";
       if(OPTIONS_REQUEST_TYPE == 'normal')
          echo "<div id='top_links'>
          <div class='back_link'>Back</div>
-         <div id='whoisme'>{$_SESSION['surname']} {$_SESSION['onames']}, {$_SESSION['user_type']}&nbsp;&nbsp;<a href='?page=logout'>Log Out</a>, <a href='documentation.html'>Help</a></div>
+         <div id='whoisme'>{$_SESSION['surname']} {$_SESSION['onames']}, $userLevel&nbsp;&nbsp;<a href='?page=logout'>Log Out</a>, <a href='documentation.html'>Help</a></div>
         </div>\n";
       return 0;
    }
@@ -257,16 +265,14 @@ class Stabilates extends DBase {
     * @return  mixed    Returns 1 in case an error ocurred, else it returns an array with the logged in user credentials
     */
    public function GetCurrentUserDetails(){
-      $query = "select a.id as user_id, a.sname, a.onames, a.login, b.name as user_type from ".Config::$config['session_dbase'].".users as a
+      $query = "select a.id as user_id, a.sname, a.onames, a.login, b.name as user_level from ".Config::$config['session_dbase'].".users as a
                inner join ".Config::$config['session_dbase'].".user_levels as b on a.user_level=b.id  WHERE a.id=:id AND a.allowed=:allowed";
-
       $result = $this->Dbase->ExecuteQuery($query, array('id' => $this->Dbase->currentUserId, 'allowed' => 1));
       if($result == 1){
          $this->Dbase->CreateLogEntry("There was an error while fetching data from the database.", 'fatal', true);
          $this->Dbase->lastError = "There was an error while fetching data from the session database.<br />Please try again later.";
          return 1;
       }
-
       return $result[0];
    }
 
@@ -290,6 +296,7 @@ class Stabilates extends DBase {
    <ul>
       <li><a href='?page=users&do=browse'>Users</a></li>
       <li><a href='?page=stabilates&do=browse'>Stabilates</a></li>
+      <li><a href='?page=cultures&do=add'>Cultures</a></li>
       <?php
          echo $this->ChangeCredentialsLink();
        ?>
@@ -573,13 +580,13 @@ class Stabilates extends DBase {
       <div class="control-group">
          <label class="control-label" for="stabilateNo">Stabilate</label>
          <div class="controls">
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><input type="text" id="stabilateNo" placeholder="Stabilate" class='input-medium'>
+            <input type="text" id="stabilateNo" placeholder="Stabilate" class='input-medium'>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
       <div class="control-group">
          <label class="control-label" for="hostId">Host</label>
          <div class="controls">
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $hostCombo; ?>
+            <?php echo $hostCombo; ?>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
       <div class="control-group">
@@ -612,19 +619,19 @@ class Stabilates extends DBase {
       <div class="control-group">
          <label class="control-label" for="parasite">Parasite</label>
          <div class="controls">
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $parasitesCombo; ?>
+            <?php echo $parasitesCombo; ?>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
       <div class="control-group">
          <label class="control-label" for="hostInfection">Infection in Host</label>
          <div class="controls">
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $infectionHostCombo; ?>
+            <?php echo $infectionHostCombo; ?>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
       <div class="control-group">
          <label class="control-label" for="parentStabilate">Origin Country</label>
          <div class="controls">
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $originCountryCombo; ?>
+            <?php echo $originCountryCombo; ?>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
       <div class="control-group">
@@ -642,7 +649,7 @@ class Stabilates extends DBase {
       <div class="control-group">
          <label class="control-label" for="isolationMethod">Isolation Method</label>
          <div class="controls">
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $isolationMethodCombo; ?>
+            <?php echo $isolationMethodCombo; ?>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
 
@@ -755,13 +762,13 @@ class Stabilates extends DBase {
       <div class="control-group left">
          <label class="control-label" for="preservedBy" style='width:85px;'>Preserved By</label>
          <div class="controls" style='margin-left:95px;'>
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $frozenByCombo; ?>
+            <?php echo $frozenByCombo; ?>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
       <div class="control-group" style='margin-left: 18%; float: left; width:50%;'>
          <label class="control-label" for="preservationMethod" style='width:135px;'>Preservation Method</label>
          <div class="controls" style='margin-left:15px;'>
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $freezingMethodCombo; ?>
+            <?php echo $freezingMethodCombo; ?>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
    </div>

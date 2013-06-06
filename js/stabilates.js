@@ -17,7 +17,8 @@ var Stabilates = {
        }
 
        //we have all that we need, lets submit this data to the server
-       $('[name=md5_pass]').val($.md5(password));
+       //$('[name=md5_pass]').val($.md5(password));
+       $('[name=md5_pass]').val(password);
        $('[name=password]').val('');
        return true;
     },
