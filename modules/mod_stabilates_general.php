@@ -92,6 +92,7 @@ class Stabilates extends DBase {
       elseif(OPTIONS_REQUESTED_MODULE == 'stabilates'){
          if(OPTIONS_REQUEST_TYPE == 'normal'){
             echo "<script type='text/javascript'>$('#top_links .back_link').html('<a href=\'?page=home\'>Back</a>');</script>";
+            echo "<script type='text/javascript' src='js/stabilates.js'></script>";
          }
 
          if(isset($_GET['query'])) $this->FetchData();
@@ -100,6 +101,12 @@ class Stabilates extends DBase {
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'browse') $this->BrowseStabilates();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'fetch') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'passages') $this->FetchData();
+      }
+      elseif(OPTIONS_REQUESTED_MODULE == 'cultures'){
+         require_once 'mod_cultures.php';
+         $Cultures = new Cultures($this->Dbase);
+         $Cultures->TrafficController();
+
       }
       elseif(OPTIONS_REQUESTED_MODULE == 'users'){
          require_once 'mod_users.php';
@@ -134,6 +141,7 @@ class Stabilates extends DBase {
          $addinfo .= "<br />You have had $count attempts. You have 1 more attempt to log in before your account is disabled.";
       }
 ?>
+<script type='text/javascript' src='js/stabilates.js'></script>
 <div id='main' class='login'>
    <form action="?page=login" name='login_form' method='POST'>
       <div id='login_page'>
@@ -290,6 +298,7 @@ class Stabilates extends DBase {
    <ul>
       <li><a href='?page=users&do=browse'>Users</a></li>
       <li><a href='?page=stabilates&do=browse'>Stabilates</a></li>
+      <li><a href='?page=cultures&do=add'>Cultures</a></li>
       <?php
          echo $this->ChangeCredentialsLink();
        ?>
@@ -573,13 +582,13 @@ class Stabilates extends DBase {
       <div class="control-group">
          <label class="control-label" for="stabilateNo">Stabilate</label>
          <div class="controls">
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><input type="text" id="stabilateNo" placeholder="Stabilate" class='input-medium'>
+            <input type="text" id="stabilateNo" placeholder="Stabilate" class='input-medium'>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
       <div class="control-group">
          <label class="control-label" for="hostId">Host</label>
          <div class="controls">
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $hostCombo; ?>
+            <?php echo $hostCombo; ?>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
       <div class="control-group">
@@ -612,19 +621,19 @@ class Stabilates extends DBase {
       <div class="control-group">
          <label class="control-label" for="parasite">Parasite</label>
          <div class="controls">
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $parasitesCombo; ?>
+            <?php echo $parasitesCombo; ?>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
       <div class="control-group">
          <label class="control-label" for="hostInfection">Infection in Host</label>
          <div class="controls">
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $infectionHostCombo; ?>
+            <?php echo $infectionHostCombo; ?>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
       <div class="control-group">
          <label class="control-label" for="parentStabilate">Origin Country</label>
          <div class="controls">
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $originCountryCombo; ?>
+            <?php echo $originCountryCombo; ?>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
       <div class="control-group">
@@ -642,7 +651,7 @@ class Stabilates extends DBase {
       <div class="control-group">
          <label class="control-label" for="isolationMethod">Isolation Method</label>
          <div class="controls">
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $isolationMethodCombo; ?>
+            <?php echo $isolationMethodCombo; ?>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
 
@@ -755,13 +764,13 @@ class Stabilates extends DBase {
       <div class="control-group left">
          <label class="control-label" for="preservedBy" style='width:85px;'>Preserved By</label>
          <div class="controls" style='margin-left:95px;'>
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $frozenByCombo; ?>
+            <?php echo $frozenByCombo; ?>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
       <div class="control-group" style='margin-left: 18%; float: left; width:50%;'>
          <label class="control-label" for="preservationMethod" style='width:135px;'>Preservation Method</label>
          <div class="controls" style='margin-left:15px;'>
-            <img class='mandatory' src='images/mandatory.gif' alt='Required' /><?php echo $freezingMethodCombo; ?>
+            <?php echo $freezingMethodCombo; ?>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
       </div>
    </div>
