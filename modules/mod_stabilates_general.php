@@ -42,7 +42,7 @@ class Stabilates extends DBase {
                return;
             }
             //initialize the session variables
-            $_SESSION['surname'] = $res['sname']; $_SESSION['onames'] = $res['onames']; $_SESSION['user_type'] = $res['user_type'];
+            $_SESSION['surname'] = $res['sname']; $_SESSION['onames'] = $res['onames']; $_SESSION['user_level'] = $res['user_level'];
             $_SESSION['user_id'] = $res['user_id'];
          }
          else die('Permission Denied. You do not have permission to access this module');
@@ -170,8 +170,8 @@ class Stabilates extends DBase {
     */
    public function StabilatesHomePage($addinfo = ''){
       //include the samples functions if need be
-      if($_SESSION['user_type'] == 'Super Administrator') $this->SysAdminsHomePage($addinfo);
-      else if($_SESSION['user_type'] == 'Administrator') $this->AdminsHomePage($addinfo);
+      if($_SESSION['user_level'] == 'Super Administrator') $this->SysAdminsHomePage($addinfo);
+      else if($_SESSION['user_level'] == 'Administrator') $this->AdminsHomePage($addinfo);
       echo "<script type='text/javascript'>$('.back_link').html('&nbsp;');</script>";
    }
 
@@ -216,10 +216,9 @@ class Stabilates extends DBase {
             return;
          }
          //initialize the session variables
-         $_SESSION['surname'] = $res['sname']; $_SESSION['onames'] = $res['onames']; $_SESSION['user_type'] = $res['user_type'];
+         $_SESSION['surname'] = $res['sname']; $_SESSION['onames'] = $res['onames']; $_SESSION['user_level'] = $res['user_level'];
          $_SESSION['user_id'] = $res['user_id']; $_SESSION['password'] = $password; $_SESSION['username'] = $username;
          $this->WhoIsMe();
-//         print_r($_SESSION);
          $this->StabilatesHomePage();
          return;
       }
@@ -250,11 +249,12 @@ class Stabilates extends DBase {
       }
 
       //display the credentials of the person who is logged in
-      Config::$curUser = "{$_SESSION['surname']} {$_SESSION['onames']}, {$_SESSION['user_type']}";
+		$userLevel = (isset($_SESSION['user_type'])) ? $_SESSION['user_type'] : $_SESSION['user_level'];
+      Config::$curUser = "{$_SESSION['surname']} {$_SESSION['onames']}, $userLevel";
       if(OPTIONS_REQUEST_TYPE == 'normal')
          echo "<div id='top_links'>
          <div class='back_link'>Back</div>
-         <div id='whoisme'>{$_SESSION['surname']} {$_SESSION['onames']}, {$_SESSION['user_type']}&nbsp;&nbsp;<a href='?page=logout'>Log Out</a>, <a href='documentation.html'>Help</a></div>
+         <div id='whoisme'>{$_SESSION['surname']} {$_SESSION['onames']}, $userLevel&nbsp;&nbsp;<a href='?page=logout'>Log Out</a>, <a href='documentation.html'>Help</a></div>
         </div>\n";
       return 0;
    }
@@ -265,16 +265,14 @@ class Stabilates extends DBase {
     * @return  mixed    Returns 1 in case an error ocurred, else it returns an array with the logged in user credentials
     */
    public function GetCurrentUserDetails(){
-      $query = "select a.id as user_id, a.sname, a.onames, a.login, b.name as user_type from ".Config::$config['session_dbase'].".users as a
+      $query = "select a.id as user_id, a.sname, a.onames, a.login, b.name as user_level from ".Config::$config['session_dbase'].".users as a
                inner join ".Config::$config['session_dbase'].".user_levels as b on a.user_level=b.id  WHERE a.id=:id AND a.allowed=:allowed";
-
       $result = $this->Dbase->ExecuteQuery($query, array('id' => $this->Dbase->currentUserId, 'allowed' => 1));
       if($result == 1){
          $this->Dbase->CreateLogEntry("There was an error while fetching data from the database.", 'fatal', true);
          $this->Dbase->lastError = "There was an error while fetching data from the session database.<br />Please try again later.";
          return 1;
       }
-
       return $result[0];
    }
 
