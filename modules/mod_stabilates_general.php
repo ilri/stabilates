@@ -807,7 +807,7 @@ $(document).ready(function () {
    $.each(date_inputs, function(i, dateInput){
       $('#'+ dateInput).jqxDateTimeInput({ width: '150px', height: '25px', theme: Main.theme, formatString: "yyyy-MM-dd",
          minDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1960, 0, 1)),
-         maxDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1990, 0, 1)),
+         maxDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(2003, 0, 1)),
          value: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1900, 0, 1))
       });
    });
