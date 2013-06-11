@@ -27,7 +27,7 @@
                echo $Stabilates->footerLinks;
             ?>
         </div>
-        <div id="footer">&copy;2013 The Biorepository</div>
+        <div id="footer">&copy;2013 - <?php echo date('Y'); ?> The Biorepository</div>
      </div>
      <div id='credits'>
         Designed and Developed By: Kihara Absolomon<br />

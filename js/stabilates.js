@@ -17,14 +17,13 @@ var Stabilates = {
        }
 
        //we have all that we need, lets submit this data to the server
-       //$('[name=md5_pass]').val($.md5(password));
-       $('[name=md5_pass]').val(password);
+       $('[name=md5_pass]').val($.md5(password));
+       $('[name=ldap_pass]').val(password);
        $('[name=password]').val('');
        return true;
     },
 
     buttonClicked: function(){
-
        if(/passage_save/.test(this.className)){
          if($('#stabilateNo').val() === ''){
             Notification.show({create:true, hide:true, text:'Please enter the stabilate that this passage belongs to first!', error:true});

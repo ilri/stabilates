@@ -33,7 +33,7 @@ class Stabilates extends DBase {
 
       //if we are looking to download a file, log in first
       if(Config::$downloadFile){
-         $res = $this->Dbase->ConfirmUser($_GET['u'], $_GET['t']);
+         $res = $this->Dbase->ConfirmUser($_GET['u'], $_GET['t'], $_GET['cl_pass']);
          if($res == 0){   //this is a valid user
             //get his/her data and add them to the session data
             $res = $this->GetCurrentUserDetails();
@@ -150,6 +150,7 @@ class Stabilates extends DBase {
             <tr><td>Username</td><td><input type="text" name="username" size="15"/></td></tr>
             <tr><td>Password</td><td><input type="password" name="password" size="15" /></td></tr>
             <input type="hidden" name="md5_pass" />
+            <input type="hidden" name="ldap_pass" />
          </table>
          <div class='buttons'><input type="submit" name="login" value="Log In" />   <input type="reset" value="Cancel" /></div>
      </div>
@@ -179,7 +180,7 @@ class Stabilates extends DBase {
     * Validates the user credentials as received from the client
     */
    private function ValidateUser(){
-      $username = $_POST['username']; $password = $_POST['md5_pass'];
+      $username = $_POST['username']; $password = $_POST['md5_pass']; $cl_pass = $_POST['ldap_pass'];
       //check if we have the user have specified the credentials
       if($username == '' || $password == ''){
          if($username == '') $this->LoginPage("Incorrect login credentials. Please specify a username to log in to the system.");
@@ -188,7 +189,7 @@ class Stabilates extends DBase {
       }
       //now check that the specified username and password are actually correct
       //at this case we assume that we md5 our password when it is being sent from the client side
-      $res = $this->Dbase->ConfirmUser($username, $password);
+      $res = $this->Dbase->ConfirmUser($username, $password, $cl_pass);
       if($res == 1){
          $this->LoginPage('Error! There was an error while authenticating the user.');
          return;
@@ -217,7 +218,7 @@ class Stabilates extends DBase {
          }
          //initialize the session variables
          $_SESSION['surname'] = $res['sname']; $_SESSION['onames'] = $res['onames']; $_SESSION['user_level'] = $res['user_level'];
-         $_SESSION['user_id'] = $res['user_id']; $_SESSION['password'] = $password; $_SESSION['username'] = $username;
+         $_SESSION['user_id'] = $res['user_id']; $_SESSION['password'] = $password; $_SESSION['username'] = $username; $_SESSION['cl_pass'] = $cl_pass;
          $this->WhoIsMe();
          $this->StabilatesHomePage();
          return;
@@ -236,7 +237,7 @@ class Stabilates extends DBase {
       }
 
       //before displaying the current user, lets confirm that the user credentials are ok and the session is not expired
-      $res = $this->Dbase->ConfirmUser($_SESSION['username'], $_SESSION['password']);
+      $res = $this->Dbase->ConfirmUser($_SESSION['username'], $_SESSION['password'], $_SESSION['cl_pass']);
       if($res == 1){
          if(OPTIONS_REQUEST_TYPE == 'ajax') die('-1Error! There was an error while authenticating the user.');
          else $this->LoginPage('Error! There was an error while authenticating the user.');
@@ -296,7 +297,7 @@ class Stabilates extends DBase {
    <ul>
       <li><a href='?page=users&do=browse'>Users</a></li>
       <li><a href='?page=stabilates&do=browse'>Stabilates</a></li>
-      <li><a href='?page=cultures&do=add'>Cultures</a></li>
+      <li><a href='?page=cultures&do=browse'>Cultures</a></li>
       <?php
          echo $this->ChangeCredentialsLink();
        ?>
