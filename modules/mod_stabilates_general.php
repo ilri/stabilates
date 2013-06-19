@@ -177,6 +177,7 @@ class Stabilates extends DBase {
       //include the samples functions if need be
       if($_SESSION['user_level'] == 'Super Administrator') $this->SysAdminsHomePage($addinfo);
       else if($_SESSION['user_level'] == 'Administrator') $this->AdminsHomePage($addinfo);
+      else if($_SESSION['user_level'] == 'Visitor') $this->VisitorsHomePage($addinfo);
       echo "<script type='text/javascript'>$('.back_link').html('&nbsp;');</script>";
    }
 
@@ -319,7 +320,7 @@ class Stabilates extends DBase {
       $addinfo = ($addinfo == '') ? '' : "<div id='addinfo'>$addinfo</div>" ;
 ?>
 <div id="home">
-   <h2 class='center'>Super Administrator Home Page</h2>
+   <h2 class='center'>Biorepository Visitor's Home Page</h2>
    <?php echo $addinfo; ?>
    <ul>
       <li><a href='?page=stabilates&do=stats'>Stabilates Statistics</a></li>
