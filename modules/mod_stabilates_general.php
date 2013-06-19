@@ -98,9 +98,13 @@ class Stabilates extends DBase {
          if(isset($_GET['query'])) $this->FetchData();
          elseif(OPTIONS_REQUESTED_ACTION == 'save') $this->SaveStabilates();
          elseif(OPTIONS_REQUESTED_ACTION == 'save_passage') $this->SavePassages();
+         elseif(OPTIONS_REQUESTED_ACTION == 'list_stabilates') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'browse') $this->BrowseStabilates();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'fetch') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'passages') $this->FetchData();
+         elseif(OPTIONS_REQUESTED_SUB_MODULE == 'stats') $this->StabilatesStats();
+         elseif(OPTIONS_REQUESTED_SUB_MODULE == 'list') $this->ListStabilates();
+         elseif(in_array(OPTIONS_REQUESTED_SUB_MODULE, array('parasite_stats', 'host_stats', 'country_stats'))) $this->FetchData();
       }
       elseif(OPTIONS_REQUESTED_MODULE == 'cultures'){
          require_once 'mod_cultures.php';
@@ -297,10 +301,29 @@ class Stabilates extends DBase {
    <ul>
       <li><a href='?page=users&do=browse'>Users</a></li>
       <li><a href='?page=stabilates&do=browse'>Stabilates</a></li>
+      <li><a href='?page=stabilates&do=stats'>Stabilates Statistics</a></li>
+      <li><a href='?page=stabilates&do=list'>List Saved Stabilates</a></li>
       <li><a href='?page=cultures&do=browse'>Cultures</a></li>
       <?php
          echo $this->ChangeCredentialsLink();
        ?>
+   </ul>
+</div>
+<?php
+   }
+
+   /**
+    * Creates the home page for the systems admins
+    */
+   private function VisitorsHomePage($addinfo = ''){
+      $addinfo = ($addinfo == '') ? '' : "<div id='addinfo'>$addinfo</div>" ;
+?>
+<div id="home">
+   <h2 class='center'>Super Administrator Home Page</h2>
+   <?php echo $addinfo; ?>
+   <ul>
+      <li><a href='?page=stabilates&do=stats'>Stabilates Statistics</a></li>
+      <li><a href='?page=stabilates&do=list'>List Saved Stabilates</a></li>
    </ul>
 </div>
 <?php
@@ -317,6 +340,8 @@ class Stabilates extends DBase {
    <?php echo $addinfo; ?>
    <ul>
       <li><a href='?page=stabilates&do=browse'>Stabilates</a></li>
+      <li><a href='?page=stabilates&do=stats'>Stabilates Statistics</a></li>
+      <li><a href='?page=stabilates&do=list'>List Saved Stabilates</a></li>
       <li><a href='?page=cultures&do=browse'>Cultures</a></li>
       <?php
          echo $this->ChangeCredentialsLink();
@@ -406,6 +431,11 @@ class Stabilates extends DBase {
       die();
    }
 
+   /**
+    * Creates the stabilates data entry home page, for entering the stabilates
+    *
+    * @return type
+    */
    private function BrowseStabilates(){
       $error = '';
 
@@ -880,6 +910,32 @@ $(document).ready(function () {
       elseif(OPTIONS_REQUESTED_ACTION == 'Host'){
          $query = "select id, source_name as name from sources order by source_name";
       }
+      elseif(OPTIONS_REQUESTED_SUB_MODULE == 'list' && OPTIONS_REQUESTED_ACTION == 'list_stabilates'){      //Fetch the list of all the stabilates that we have entered
+         $query = 'select a.id as stabilate_id, a.stab_no, b.parasite_name, c.host_name, d.country_name, a.isolation_date, "N/A" as ln_location
+            from stabilates as a inner join parasites as b on a.parasite_id=b.id inner join hosts as c on a.host=c.id inner join origin_countries as d on a.country=d.id';
+         $res = $this->Dbase->ExecuteQuery($query);
+         if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+         header("Content-type: application/json");
+         die('{"data":'. json_encode($res) .'}');
+      }
+      elseif(OPTIONS_REQUESTED_MODULE == 'stabilates' && in_array(OPTIONS_REQUESTED_SUB_MODULE, array('parasite_stats', 'host_stats', 'country_stats'))){
+         if(OPTIONS_REQUESTED_SUB_MODULE == 'parasite_stats') $query = 'SELECT parasite_name as s_name, count(*) as count FROM `stabilates` as a inner join parasites as b on a.parasite_id=b.id group by parasite_id';
+         if(OPTIONS_REQUESTED_SUB_MODULE == 'host_stats') $query = 'SELECT host_name as s_name, count(*) as count FROM `stabilates` as a inner join hosts as b on a.host=b.id group by host_name';
+         if(OPTIONS_REQUESTED_SUB_MODULE == 'country_stats') $query = 'SELECT country_name as s_name, count(*) as count FROM `stabilates` as a inner join origin_countries as b on a.country=b.id group by country_name';
+
+         $res = $this->Dbase->ExecuteQuery($query);
+         if($res == 1){
+            $this->Dbase->RollBackTrans();
+            die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+         }
+         header("Content-type: application/csv");
+         $count = count($res);
+         for($i = 0; $i < $count; $i++){
+            echo "{$res[$i]['s_name']}, {$res[$i]['count']}";
+            if($i != $count-1) echo "\n";
+         }
+         die();
+      }
       $res = $this->Dbase->ExecuteQuery($query, $vals);
       if($res != 1){
          die(json_encode(array('error' => false, 'data' => $res)));
@@ -1075,6 +1131,57 @@ $(document).ready(function () {
       //we are all good
       $this->Dbase->RollBackTrans();
       die(json_encode(array('error' => false, 'data' => 'Data saved well')));
+   }
+
+   /**
+    * Show the stabilates that have been entered
+    */
+   private function ListStabilates(){
+?>
+<link rel="stylesheet" href="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/styles/jqx.base.css" type="text/css" />
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxcore.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxcalendar.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxtabs.js"></script>
+
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxgrid.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxgrid.filter.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxdata.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxscrollbar.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxgrid.selection.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxbuttons.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxmenu.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxdropdownlist.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxlistbox.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxcheckbox.js"></script>
+<div id='list_stabilates'>
+</div>
+<script type='text/javascript'>
+$(document).ready(function () {
+   Stabilates.initiateStabilatesList();
+});
+</script>
+<?php
+   }
+
+   /**
+    * Creates some pie charts with the stabilates stats
+    */
+   private function StabilatesStats(){
+?>
+<link rel="stylesheet" href="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/styles/jqx.base.css" type="text/css" />
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxcore.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxchart.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxdata.js"></script>
+
+<div id='parasites'></div>
+<div id='hosts'></div>
+<div id='countries'></div>
+<script type='text/javascript'>
+$(document).ready(function () {
+   Stabilates.initiateStabilatesStats();
+});
+</script>
+<?php
    }
 }
 ?>

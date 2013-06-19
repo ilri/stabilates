@@ -353,6 +353,12 @@ var Stabilates = {
       });
    },
 
+   /**
+    * Starts the process of editing a passage
+    *
+    * @param {type} event
+    * @returns {undefined}
+    */
    startPassageEdit: function(event){
       var rowIndex = event.args.rowindex;
       var data = $('#saved_passages').jqxGrid('getrowdata', rowIndex);
@@ -392,5 +398,90 @@ var Stabilates = {
 
       $('#passageNo').val(data.passage_no).focus();
       $('#passages_tab').jqxTabs('select', 0);
+   },
+
+   /**
+    * Initiates the stabilates grid for listing the entered stabilates and their passages and other metadata
+    * @returns {undefined}
+    */
+   initiateStabilatesList: function(){
+      var source = {
+         datatype: 'json', datafields: [ {name: 'stab_no'}, {name: 'parasite_name'}, {name: 'host_name'}, {name: 'country_name'}, {name: 'isolation_date'}, {name: 'ln_location'}],
+         id: 'id', root: 'data', async: true, type: 'POST', data: {action: 'list_stabilates'}, url: 'mod_ajax.php?page=stabilates&do=list'
+      };
+      var stabilatesAdapter = new $.jqx.dataAdapter(source);
+      $("#list_stabilates").jqxGrid({
+         width: 910,
+         height: 510,
+         source: stabilatesAdapter,
+         showfilterrow: true,
+         filterable: true,
+         theme: Main.theme,
+         rowdetails: false,
+         rowsheight: 20,
+         columns: [
+            {text: 'Stabilate Id', datafield: 'stabilate_id', width: 10, hidden: true},
+            {text: 'Stabilate No', datafield: 'stab_no', width: 120},
+            {text: 'Parasite', datafield: 'parasite_name', filtertype: 'checkedlist', width: 150},
+            {text: 'Host', datafield: 'host_name', filtertype: 'checkedlist', width: 180},
+            {text: 'Country', datafield: 'country_name', filtertype: 'checkedlist', width: 150},
+            {text: 'Isolation Date', datafield: 'isolation_date', width: 200},
+            {text: 'LN Location', datafield: 'ln_location', width: 90}
+         ]
+      });
+   },
+
+   /**
+    * Initiates stabilates stats visualization
+    *
+    * @returns {undefined}
+    */
+   initiateStabilatesStats: function(){
+      var charts = [
+         {id: 'parasites', name: 'Parasite', title: 'Parasites distribution', descr: '(entered stabilates only)', url: 'mod_ajax.php?page=stabilates&do=parasite_stats'},
+         {id: 'hosts', name: 'Host', title: 'Hosts distribution', descr: '(entered stabilates only)', url: 'mod_ajax.php?page=stabilates&do=host_stats'},
+         {id: 'countries', name: 'Country', title: 'Country distribution', descr: '(entered stabilates only)', url: 'mod_ajax.php?page=stabilates&do=country_stats'}
+      ];
+
+      $.each(charts, function(i, t){
+         var source ={
+            datatype: "csv",
+            datafields: [
+               { name: t.name },
+               { name: 'Share' }
+            ],
+            url: t.url
+         };
+
+         var dataAdapter = new $.jqx.dataAdapter(source, { async: false, autoBind: true, loadError: function (xhr, status, error) { alert('Error loading "' + source.url + '" : ' + error); } });
+
+         // prepare jqxChart settings
+         var settings = {
+             title: t.title,
+             description: t.descr,
+             enableAnimations: true,
+             showLegend: true,
+             legendLayout: { left: 500, top: 50, width: 350, height: 270, flow: 'vertical' },
+             padding: { left: 5, top: 5, right: 5, bottom: 5 },
+             titlePadding: { left: 0, top: 0, right: 0, bottom: 10 },
+             source: dataAdapter,
+             colorScheme: 'scheme03',
+             seriesGroups:[{
+                type: 'pie',
+                showLabels: true,
+                series:[{
+                   dataField: 'Share',
+                   displayText: t.name,
+                   labelRadius: 120,
+                   initialAngle: 55,
+                   radius: 105,
+                   centerOffset: 0,
+                   formatSettings: { sufix: ' ', decimalPlaces: 0 }
+               }]
+            }]
+         };
+         // setup the chart
+         $('#'+ t.id).jqxChart(settings);
+      });
    }
 };
