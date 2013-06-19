@@ -461,9 +461,9 @@ var Stabilates = {
              description: t.descr,
              enableAnimations: true,
              showLegend: true,
-             legendLayout: { left: 500, top: 50, width: 350, height: 270, flow: 'vertical' },
+//             legendLayout: { left: 500, top: 50, width: 300, height: 270, flow: 'vertical' },
              padding: { left: 5, top: 5, right: 5, bottom: 5 },
-             titlePadding: { left: 0, top: 0, right: 0, bottom: 10 },
+             titlePadding: { left: 0, top: 0, right: 0, bottom: 0 },
              source: dataAdapter,
              colorScheme: 'scheme03',
              seriesGroups:[{
@@ -472,9 +472,9 @@ var Stabilates = {
                 series:[{
                    dataField: 'Share',
                    displayText: t.name,
-                   labelRadius: 120,
+                   labelRadius: 130,
                    initialAngle: 55,
-                   radius: 105,
+                   radius: 115,
                    centerOffset: 0,
                    formatSettings: { sufix: ' ', decimalPlaces: 0 }
                }]
