@@ -1117,6 +1117,8 @@ $(document).ready(function () {
          //we wanna save a new stabilates
          $insert_cols[] = 'stabilate_ref'; $insert_vals[] = ':stabilate_ref'; $vals['stabilate_ref'] = $parentStabilate;
          $insert_cols[] = 'inoculum_ref'; $insert_vals[] = ':inoculum_ref'; $vals['inoculum_ref'] = $inoculum_ref;
+         $insert_cols[] = 'datetime_added'; $insert_vals[] = ':timestamp'; $vals['timestamp'] = date('Y-m-d H:i:s');
+         $insert_cols[] = 'added_by'; $insert_vals[] = ':added_by'; $vals['added_by'] = $_SESSION['user_id'];
          $query = 'insert into passages('. implode(', ', $insert_cols) .') values('. implode(', ', $insert_vals) .')';
       }
       $res = $this->Dbase->UpdateRecords($query, $vals, $lockQuery);

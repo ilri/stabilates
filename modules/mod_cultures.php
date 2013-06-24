@@ -281,6 +281,7 @@ $(document).ready(function () {
       }
       else{
          //we wanna save a new stabilates
+         $insert_cols[] = 'added_by'; $insert_vals[] = ':added_by'; $vals['added_by'] = $_SESSION['user_id'];
          $query = 'insert into cultures('. implode(', ', $insert_cols) .') values('. implode(', ', $insert_vals) .')';
       }
       $res = $this->Dbase->UpdateRecords($query, $vals, $lockQuery);
