@@ -175,6 +175,9 @@ var Stabilates = {
           else if(inoculumType === 'Passage'){
              params += '&stabilate_ref='+ Main.curStabilateId;
           }
+          else{
+             return;
+          }
 
          Notification.show({create:true, hide:false, updateText:false, text:'Please wait while we fetch the data...', error:false});
          $.ajax({
