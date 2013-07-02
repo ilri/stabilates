@@ -100,11 +100,13 @@ class Stabilates extends DBase {
          elseif(OPTIONS_REQUESTED_ACTION == 'save_passage') $this->SavePassages();
          elseif(OPTIONS_REQUESTED_ACTION == 'list_stabilates') $this->FetchData();
          elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_data') $this->FetchData();
+         elseif(OPTIONS_REQUESTED_ACTION == 'yellow_form') $this->CreateStabilatesYellowForm();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'browse') $this->BrowseStabilates();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'fetch') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'passages') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'stats') $this->StabilatesStats();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'list') $this->ListStabilates();
+         elseif(OPTIONS_REQUESTED_SUB_MODULE == 'yellow_form') $this->StabilatesYellowForm();
          elseif(in_array(OPTIONS_REQUESTED_SUB_MODULE, array('parasite_stats', 'host_stats', 'country_stats'))) $this->FetchData();
       }
       elseif(OPTIONS_REQUESTED_MODULE == 'cultures'){
@@ -305,6 +307,7 @@ class Stabilates extends DBase {
       <li><a href='?page=stabilates&do=browse'>Stabilates</a></li>
       <li><a href='?page=stabilates&do=stats'>Stabilates Statistics</a></li>
       <li><a href='?page=stabilates&do=list'>List Saved Stabilates</a></li>
+      <li><a href='?page=stabilates&do=yellow_form'>Stabilates Yellow Form</a></li>
       <li><a href='?page=cultures&do=browse'>Cultures</a></li>
       <?php
          echo $this->ChangeCredentialsLink();
@@ -608,6 +611,7 @@ class Stabilates extends DBase {
 
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxdatetimeinput.js"></script>
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/globalization/jquery.global.js"></script>
+<div id="addinfo">&nbsp;</div>
 <form class='form-horizontal'>
 <fieldset class='stabilates'>
    <legend>Stabilates</legend>
@@ -615,7 +619,8 @@ class Stabilates extends DBase {
       <div class="control-group">
          <label class="control-label" for="stabilateNo">Stabilate</label>
          <div class="controls">
-            <input type="text" id="stabilateNo" placeholder="Stabilate" class='input-medium'>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
+            <input type="text" id="stabilateNo" placeholder="Stabilate" class='input-medium'>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />&nbsp;&nbsp;
+            <a href="javascript:;" class="view_form">Form</a>
          </div>
       </div>
       <div class="control-group">
@@ -877,6 +882,7 @@ $(document).ready(function () {
    $('#synonym').keyup(Stabilates.addSynonym);
    Stabilates.initiatePassageDetails();
 
+   $('.view_form').click(Stabilates.viewYellowForm);
    $('#passages_tab').jqxTabs({ width: '100%', height: 310, position: 'top', theme: Main.theme });
    $('#passages_tab').live('selecting', function (event) {
       if(event.args.item === 1){
@@ -1252,6 +1258,88 @@ $(document).ready(function () {
    Stabilates.initiateStabilatesStats();
 });
 </script>
+<?php
+   }
+
+   private function StabilatesYellowForm(){
+      $this->CreateStabilatesYellowForm();
+   }
+
+   private function CreateStabilatesYellowForm(){
+      //lets fetch the data for the form
+      $query = 'select a.*, b.parasite_name, c.host_name, d.country_name, "N/A" as ln_location, e.host_name, f.method_name as isolation_method, g.method_name as preservation_method, h.user_names, i.country_name
+         from stabilates as a inner join parasites as b on a.parasite_id=b.id inner join hosts as c on a.host=c.id inner join origin_countries as d on a.country=d.id
+         inner join infection_host as e on a.infection_host=e.id inner join isolation_methods as f on a.isolation_method=f.id inner join preservation_methods as g on a.freezing_method=g.id
+         inner join users as h on a.frozen_by=h.id inner join origin_countries as i on a.country=i.id
+         where a.id = :stabilate_id';
+      $res = $this->Dbase->ExecuteQuery($query, array('stabilate_id' => $_POST['stabilate_id']));
+      if($res == 1) die($this->Dbase->lastError);
+
+      $st = $res[0];
+      if($st['preserved_type'] == 1) $st['preserved_type'] = 'Capillaries';
+      elseif($st['preserved_type'] == 2) $st['preserved_type'] = 'Vials';
+      foreach($st as $key => $value) $st[$key] = "<span class='data'>{$value}</span>";
+
+?>
+<div id="yellow_form">
+   <table id="main_table">
+      <!-- Isolation -->
+      <tr><td>
+            <table id="isolation">
+               <tr>
+                  <td rowspan="4" class="vertical">Isolation</td>
+                  <td class="isol_1">Host<?php echo $st['host_name']; ?></td>
+                  <td rowspan="2" class="top_align">Infection in Host<?php echo $st['host_name']; ?></td>
+               </tr>
+               <tr><td class="isol_1">Locality<?php echo "{$st['country_name']}, {$st['locality']}"; ?></td></tr>
+               <tr>
+                  <td class="isol_1">Date<?php echo $st['isolation_date']; ?></td>
+                  <td rowspan="2" class="top_align">Method<?php echo $st['isolation_method']; ?></td>
+               </tr>
+               <tr><td class="isol_1">Isolated<?php echo $st['isolated']; ?></td></tr>
+            </table>
+      </td></tr>
+      <!-- Maintenance -->
+      <tr><td>
+            <table id="maintenance">
+               <tr><td rowspan="6" class="vertical" width="4px">Maintenance</td><th>Passage No</th><th>Species & Number</th><th>Inoculum</th><th title="Duration of Infection before passage or freezing">Duration</th><th>Notes</th></tr>
+               <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+               <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+               <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+               <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+               <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+            </table>
+         </td></tr>
+      <!-- Preservation -->
+      <tr><td>
+            <table id="preservation">
+               <tr><td rowspan="4" class="vertical">Preserv.</td><td>Date<?php echo $st['preservation_date']; ?></td><td>No. Frozen<?php echo "{$st['number_frozen']} {$st['preserved_type']}"; ?></td><td>Frozen By<?php echo $st['user_names']; ?></td></tr>
+               <tr><td colspan="3">Method<?php echo $st['preservation_method']; ?></td></tr>
+               <tr><td colspan="3">&nbsp;</td></tr>
+               <tr><td colspan="3">&nbsp;</td></tr>
+            </table>
+         </td></tr>
+      <!-- Strain Data -->
+      <tr><td>
+            <table id="strain">
+               <tr><td rowspan="7" class="vertical">Strain Data</td><td class="strain_1">Count</td><td>&nbsp;<?php echo $st['strain_count']; ?></td></tr>
+               <tr><td rowspan="2" class="strain_1">Morphology</td><td>&nbsp;<?php echo $st['strain_morphology']; ?></td></tr>
+               <tr><td>&nbsp;</td></tr>
+               <tr><td class="strain_1" rowspan="2">Infectivity</td><td>&nbsp;<?php echo $st['strain_infectivity']; ?></td></tr>
+               <tr><td>&nbsp;</td></tr>
+               <tr><td class="strain_1" rowspan="2">Pathogenicity</td><td>&nbsp;<?php echo $st['strain_pathogenicity']; ?></td></tr>
+               <tr><td>&nbsp;</td></tr>
+            </table>
+         </td></tr>
+      <!-- Other Info -->
+      <tr><td>
+            <table id="other">
+               <tr><th width="15%">Position</th><th>Species</th><th width="20%">ILRI No.</th></tr>
+               <tr><td>&nbsp;<?php echo $st['ln_location']; ?></td><td class="center">&nbsp;<?php echo $st['parasite_name']; ?></td><td><?php echo $st['stab_no']; ?></td></tr>
+            </table>
+         </td></tr>
+   </table>
+</div>
 <?php
    }
 }

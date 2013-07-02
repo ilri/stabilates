@@ -17,7 +17,6 @@ body {
 
 #addinfo, #top_tip{
    margin: 2px 5px;
-   min-height: 20px;
    width: max-content;
    padding: 2px;
    text-align: center;
@@ -156,8 +155,11 @@ fieldset, .passages{
 
 #home .center{
    float: none;
-   text-align: center;
    font-size: 1.5em;
+}
+
+.center{
+   text-align: center;
 }
 
 #home ul{
@@ -201,3 +203,60 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
    margin: 5px;
 }
 /**************************Bootstrap changes***************************/
+
+#yellow_form table{
+   margin: 8px 5px;
+   width: 99%;
+   background-color: #EFEF9A;
+   color: #0A08A9;
+   font-family: Times New Roman;
+   border: 0.5px solid black;
+}
+
+#main_table{
+   width: 1020px;
+}
+
+#main_table td, #main_table th{
+   font-weight: normal;
+   border: none;
+}
+
+#isolation td, #maintenance td, #maintenance th, #preservation td, #strain td, #other td, #other th{
+   border-collapse: collapse;
+   border: 0.5px solid #A6A5E1;
+}
+
+#yellow_form .vertical{
+   writing-mode: tb-rl;
+   filter: flipv fliph;
+   -webkit-transform:rotate(-90deg);
+   -moz-transform: rotate(-90deg);
+   -ms-transform: rotate(-90deg);
+   -o-transform: rotate(-90deg);
+   transform: rotate(-90deg);
+
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    width: 9%;
+    overflow: hidden;
+}
+
+#yellow_form .isol_1{
+   width: 45%;
+}
+
+#yellow_form .strain_1{
+   width: 10%;
+}
+
+#yellow_form .top_align{
+   vertical-align: top;
+}
+
+#yellow_form .data{
+   color: black;
+   font-weight: bold;
+   padding-left: 45px;
+}

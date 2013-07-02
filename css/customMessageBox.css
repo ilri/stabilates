@@ -1,5 +1,5 @@
 
-/** 
+/**
  *    Document   : customMessageBox
  *    Created on : Aug 17, 2011, 4:30:35 AM
  *    Author     : Kihara Absolomon <soloincc.movert.co.ke>
@@ -8,29 +8,29 @@
  */
 
 .default_titleBar{
-	background-color: #abdfe8;
+	background-color: #FFFFFF;
+   text-align: center;
+   font-weight: bold;
 }
 
 .default_alertWindow{}
-
 
 .default_titleBarRightIcon{}
 
 .default_titleBarLeftIcon{}
 
 .default_contentArea{
-	background-color: #afb3b4;
+	background-color: #FFFFFF;
 	padding: 3px;
 }
 
 .default_buttonArea{
-	background-color: #afb3b4;
+	background-color: #FFFFFF;
 	text-align: center;
 	padding-bottom: 5px;
 }
 
-.default_okButton{
-}
+.default_okButton{}
 
 #alertWindow .default_contentArea{
 	overflow: auto;

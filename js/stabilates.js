@@ -551,5 +551,34 @@ var Stabilates = {
 
       $("#synonym_list").jqxListBox({ source: source });
       $('#synonym').val('').focus();
+   },
+
+   /**
+    * Display an imitation of the yellow form where we got the data
+    * @returns {undefined}
+    */
+   viewYellowForm: function(){
+      if(Main.curStabilate.id === undefined){
+         Notification.show({create:true, hide:true, updateText:false, text:'Error! Search for a stabilate first before requesting for its form.', error:true});
+         return;
+      }
+
+      //ask for all that beautiful form
+      var params = 'stabilate_id='+ Main.curStabilate.id +'&action=yellow_form';
+      Notification.show({create:true, hide:false, updateText:false, text:'Fetching the yellow form...', error:false});
+      $.ajax({
+         type:"POST", url:'mod_ajax.php?page=stabilates&do=browse', dataType:'html', async: false, data: params,
+         error:function(){
+            Notification.show({create:false, hide:true, updateText:true, text:'There was an error while communicating with the server', error:true});
+            return false;
+         },
+         success: function(data){
+            var mssg;
+            if(data.error) mssg = data.data+ ' Please try again.';
+            else mssg = 'Fetched succesfully';
+            Notification.show({create:false, hide:true, updateText:true, text:mssg, error:data.error});
+            CustomMssgBox.createMessageBox({okText: 'ok', message: data, callBack: Common.closeMessageBox, cancelButton: false, customTitle: 'Details for '+ $('#stabilateNo').val().toUpperCase(), width: 1060});
+         }
+      });
    }
 };
