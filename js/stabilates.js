@@ -144,8 +144,7 @@ var Stabilates = {
           $(this).val(0);
           return;
        }
-       var params, inoculumType;
-
+       var params = '', inoculumType, passageCount =  $("#saved_passages").jqxGrid('getRows').length;
        if($('#inoculumTypeId').val() !== 0){
           //request for the necessary data
           $.each($('#inoculumTypeId')[0].options, function(i, dt){
@@ -157,10 +156,16 @@ var Stabilates = {
           });
           $('#passageNo').val('');
           if(inoculumType === 'Stabilate'){
+             if(passageCount !== 0){
+                var mssg = sprintf('Error! An inoculum source can only be a stabilate if it is the first passage/inoculation. This is the %d passage.', passageCount+1);
+                $(this).val(0);
+                Notification.show({create:true, hide:true, updateText:false, text:mssg, error:true});
+                return;
+             }
              //create an auto complete text input
              $('#inoculumTypeContainter').html("<input type='text' id='inoculumSourceId' placeholder='parent_stabilate' class='input-medium'>");
              var settings = {
-                  serviceUrl:'mod_ajax.php', minChars:1, maxHeight:400, width:150,
+                  serviceUrl:'mod_ajax.php', minChars:2, maxHeight:400, width:150,
                   zIndex: 9999, deferRequestBy: 300, //miliseconds
                   params: { page: 'stabilates', 'do': 'browse' }, //aditional parameters
                   noCache: true, //default is false, set to true to disable caching
@@ -169,14 +174,18 @@ var Stabilates = {
                   beforeNewQuery: undefined,
                   visibleSuggestions: true
              };
-             $('#passageNo').val('01');
              $('#inoculumSourceId').focus().autocomplete(settings);
+             $('#passageNo').val('1');
              return;
           }
           else if(inoculumType === 'Passage'){
              params += '&stabilate_ref='+ Main.curStabilateId;
           }
           else{
+             passageCount = (passageCount < 10) ? passageCount+1 : passageCount+1;
+             $('#passageNo').val(passageCount);
+             $('#inoculumTypeContainter').html("<input type='text' id='inoculumSourceId' placeholder='parent_stabilate' class='input-medium'>");
+             $('#inoculumSourceId').focus();
              return;
           }
 
@@ -331,7 +340,7 @@ var Stabilates = {
                {text: 'Pass Parent', datafield: 'inoculum_ref', width: 100},
                {text: 'Inoculum Type', datafield: 'inoculum_name', width: 100},
                {text: 'Species', datafield: 'species_name', width: 150},
-               {text: 'Days', datafield: 'idays', width: 60},
+               {text: 'Days', datafield: 'idays', width: 60, cellsrenderer: function(row, column, value){ return value +' days'; }},
                {text: '# Infected', datafield: 'no_infected', width: 100},
                {text: 'Rad. Freq', datafield: 'rfreq', width: 80},
                {text: 'Rad. Date', datafield: 'rdate', width: 120},
@@ -411,6 +420,9 @@ var Stabilates = {
                return false;
             }
          });
+      }
+      else{
+         $('#inoculumSourceId').val(data.inoculum_ref);
       }
       $('#radiationFreq').val(data.rfreq);
       $.each($('#infectedSpeciesId')[0].options, function(i, dt){

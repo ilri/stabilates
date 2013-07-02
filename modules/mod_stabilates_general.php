@@ -917,7 +917,7 @@ $(document).ready(function () {
       }
       elseif(OPTIONS_REQUESTED_SUB_MODULE == 'passages' && OPTIONS_REQUESTED_ACTION == 'browse'){
          if(!isset($_POST['stabilate_id'])) die('{"data":'. json_encode(array()) .'}');
-         $query = 'select a.*, b.inoculum_name, c.species_name, concat(a.infection_duration, " days") as idays, a.number_of_species as no_infected, radiation_freq as rfreq, radiation_date as rdate, passage_comments as comments
+         $query = 'select a.*, b.inoculum_name, c.species_name, a.infection_duration as idays, a.number_of_species as no_infected, radiation_freq as rfreq, radiation_date as rdate, passage_comments as comments
             from passages as a inner join inoculum as b on a.inoculum_type=b.id
             inner join infected_species as c on a.infected_species=c.id
             where a.stabilate_ref = :stabilate_ref order by a.passage_no';
@@ -1157,7 +1157,14 @@ $(document).ready(function () {
          $inoculum_ref = $res[0]['source_name'];
       }
       else{
-         die(json_encode(array('error' => true, 'data' => 'Please select a valid inoculum source.')));
+         //get the inoculum name from the db and append the added info.
+         $query = 'select inoculum_name from inoculum where id=:id';
+         $res = $this->Dbase->ExecuteQuery($query, array('id' => $dt['inoculumTypeId']));
+         if($res == 1){
+            $this->Dbase->RollBackTrans();
+            die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+         }
+         $inoculum_ref = $dt['inoculumSourceId'];
       }
 
       if(count($errors) != 0 ) die(json_encode(array('error' => true, 'data' => implode("<br />", $errors))));
@@ -1166,7 +1173,7 @@ $(document).ready(function () {
       $lockQuery = "lock table passages write";
       $this->Dbase->StartTrans();
       if(isset($dt['id'])){
-         //we wanna update a stabilate
+         //we wanna update a passage
          $vals['id'] = $dt['id'];
          $vals['inoculum_ref'] = $inoculum_ref;
          $vals['stabilate_ref'] = $parentStabilate;
@@ -1175,7 +1182,7 @@ $(document).ready(function () {
          $query = 'update passages set '. implode(', ', $set) .' where id=:id';
       }
       else{
-         //we wanna save a new stabilates
+         //we wanna save a new passage
          $insert_cols[] = 'stabilate_ref'; $insert_vals[] = ':stabilate_ref'; $vals['stabilate_ref'] = $parentStabilate;
          $insert_cols[] = 'inoculum_ref'; $insert_vals[] = ':inoculum_ref'; $vals['inoculum_ref'] = $inoculum_ref;
          $insert_cols[] = 'datetime_added'; $insert_vals[] = ':timestamp'; $vals['timestamp'] = date('Y-m-d H:i:s');
