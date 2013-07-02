@@ -340,7 +340,12 @@ var Stabilates = {
                {text: 'Pass Parent', datafield: 'inoculum_ref', width: 100},
                {text: 'Inoculum Type', datafield: 'inoculum_name', width: 100},
                {text: 'Species', datafield: 'species_name', width: 150},
-               {text: 'Days', datafield: 'idays', width: 60, cellsrenderer: function(row, column, value){ return value +' days'; }},
+               {text: 'Days', datafield: 'idays', width: 60, cellsrenderer:
+                  function(row, column, value){
+                     if(isNaN(value) || value === '') return value;
+                     else return value +' days';
+                  }
+               },
                {text: '# Infected', datafield: 'no_infected', width: 100},
                {text: 'Rad. Freq', datafield: 'rfreq', width: 80},
                {text: 'Rad. Date', datafield: 'rdate', width: 120},
