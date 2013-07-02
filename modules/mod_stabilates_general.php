@@ -99,6 +99,7 @@ class Stabilates extends DBase {
          elseif(OPTIONS_REQUESTED_ACTION == 'save') $this->SaveStabilates();
          elseif(OPTIONS_REQUESTED_ACTION == 'save_passage') $this->SavePassages();
          elseif(OPTIONS_REQUESTED_ACTION == 'list_stabilates') $this->FetchData();
+         elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_data') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'browse') $this->BrowseStabilates();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'fetch') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'passages') $this->FetchData();
@@ -396,7 +397,7 @@ class Stabilates extends DBase {
    //bind the search to autocomplete
    $(function(){
       var settings = {
-         serviceUrl:'mod_ajax.php', minChars:1, maxHeight:400, width:150,
+         serviceUrl:'mod_ajax.php', minChars:2, maxHeight:400, width:150,
          zIndex: 9999, deferRequestBy: 300, //miliseconds
          params: { page: '<?php echo $settings['reqModule']; ?>', 'do': '<?php echo $settings['reqSubModule']; ?>' }, //aditional parameters
          noCache: true, //default is false, set to true to disable caching
@@ -600,6 +601,7 @@ class Stabilates extends DBase {
 
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxgrid.js"></script>
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxdata.js"></script>
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxlistbox.js"></script>
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxscrollbar.js"></script>
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxgrid.selection.js"></script>
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxbuttons.js"></script>
@@ -835,6 +837,24 @@ class Stabilates extends DBase {
       </div>
 </fieldset>
 
+<fieldset class='synonyms'>
+   <legend>Synonyms</legend>
+   <div id="stab_synonyms">
+      <div class="control-group">
+         <label class="control-label" for="synonym" style='margin-left:15px;width:auto;'>Synonym</label>
+         <div class="controls" style='margin-left:85px;'>
+            <input type="text" id="synonym" placeholder="Stabilate Synonym" class='input-medium'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="text-center">List of Synonyms</label>
+         <div class="controls" style='margin-left:75px;'>
+            <div id="synonym_list"></div>
+         </div>
+      </div>
+   </div>
+</fieldset>
+
 <div id='footer_links'>
    <button class="btn btn-medium btn-primary stabilate_save" type="button" value="save">Save Stabilate</button>
    <button class="btn btn-medium btn-primary stabilate_cancel" type="button">Cancel</button>
@@ -853,6 +873,8 @@ $(document).ready(function () {
    });
    $('[type=button]').live('click', Stabilates.buttonClicked);
    $('#inoculumTypeId').live('change', Stabilates.inoculumTypeChange);
+   $("#synonym_list").jqxListBox({ source: [], width: 200, height: 150, theme: Main.theme });
+   $('#synonym').keyup(Stabilates.addSynonym);
    Stabilates.initiatePassageDetails();
 
    $('#passages_tab').jqxTabs({ width: '100%', height: 310, position: 'top', theme: Main.theme });
@@ -869,7 +891,7 @@ $(document).ready(function () {
 </script>
 <?php
       $this->AutoCompleteFiles();
-      $settings = array('inputId' => 'stabilateNo', 'reqModule' => 'stabilates', 'reqSubModule' => 'browse', 'selectFunction' => 'Stabilates.fillStabilatesData');
+      $settings = array('inputId' => 'stabilateNo', 'reqModule' => 'stabilates', 'reqSubModule' => 'browse', 'selectFunction' => 'Stabilates.fetchStabilatesData');
       $this->InitiateAutoComplete($settings);
 
       $settings = array('inputId' => 'parent_stabilate', 'reqModule' => 'stabilates', 'reqSubModule' => 'browse');
@@ -882,7 +904,7 @@ $(document).ready(function () {
    private function FetchData(){
       $vals = array();
       if(isset($_GET['query'])){
-         $query = 'select * from stabilates where stab_no like :query';
+         $query = 'select id, stab_no from stabilates where stab_no like :query';
          $res = $this->Dbase->ExecuteQuery($query, array('query' => "%{$_GET['query']}%"));
          if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
          $suggestions = array();
@@ -901,8 +923,23 @@ $(document).ready(function () {
             where a.stabilate_ref = :stabilate_ref order by a.passage_no';
          $res = $this->Dbase->ExecuteQuery($query, array('stabilate_ref' => $_POST['stabilate_id']));
          if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+
          header("Content-type: application/json");
          die('{"data":'. json_encode($res) .'}');
+      }
+      elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_data'){
+         //get the stabilate info
+         $query = 'select * from stabilates where id = :stabilateId';
+         $res = $this->Dbase->ExecuteQuery($query, array('stabilateId' => $_POST['stabilate_id']));
+         if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+
+         //get the synonyms
+         $query = 'select id, stabilate_id, synonym_name as name from stab_synonyms where stabilate_id = :stabilate_ref';
+         $synonyms = $this->Dbase->ExecuteQuery($query, array('stabilate_ref' => $_POST['stabilate_id']));
+         if($synonyms == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+
+         header("Content-type: application/json");
+         die(json_encode(array('error' => false, 'data' => $res[0], 'synonyms' => $synonyms)));
       }
       elseif(OPTIONS_REQUESTED_ACTION == 'Passage'){
          $query = "select id, concat('Passage ', passage_no) as name from passages where stabilate_ref=:stabilate_ref";
@@ -993,12 +1030,13 @@ $(document).ready(function () {
 
       if(count($errors) != 0 ) die(json_encode(array('error' => true, 'data' => implode("<br />", $errors))));
 
-      $lockQuery = "lock table stabilates write";
+      $lockQuery = "lock table stabilates write, stab_synonyms write";
       $this->Dbase->StartTrans();
       if(isset($dt['id'])){
          //we wanna update a stabilate
          $vals['id'] = $dt['id'];
          $query = 'update stabilates set '. implode(', ', $set) .' where id=:id';
+         $stabilateId = $dt['id'];
       }
       else{
          //we wanna save a new stabilates
@@ -1009,6 +1047,29 @@ $(document).ready(function () {
          $this->Dbase->RollBackTrans();
          die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
       }
+
+      if(!isset($dt['id'])){
+         $stabilateId = $this->Dbase->ExecuteQuery('select LAST_INSERT_ID() as id');
+         if($stabilateId == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+         $stabilateId = $stabilateId[0]['id'];
+      }
+
+      //now lets update the synonyms
+      $cols = array('stabilate_id', 'synonym_name');
+      foreach($dt['synonyms'] as $synonym){
+         if(!isset($synonym['id'])){
+            $query = 'insert into stab_synonyms(stabilate_id, synonym_name) values(:stabilateId, :synonym)';
+            $vals = array('stabilateId' => $stabilateId, 'synonym' => $synonym['name']);
+         }
+         else{/*Its already in the database... why edit it????*/}
+
+         $res = $this->Dbase->UpdateRecords($query, $vals);
+         if($res == 1){
+            $this->Dbase->RollBackTrans();
+            die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+         }
+      }
+
       //commit the transaction and unlock the tables
       if( !$this->Dbase->CommitTrans() ) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
       $res = $this->Dbase->ExecuteQuery("Unlock tables");

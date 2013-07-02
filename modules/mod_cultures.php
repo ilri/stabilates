@@ -189,7 +189,7 @@ $(document).ready(function () {
    //bind the search to autocomplete
    $(function(){
       var <?php echo $settings['inputId']; ?>_settings = {
-         serviceUrl:'mod_ajax.php', minChars:1, maxHeight:400, width:350,
+         serviceUrl:'mod_ajax.php', minChars:2, maxHeight:400, width:350,
          zIndex: 9999, deferRequestBy: 300, //miliseconds
          params: { page: '<?php echo $settings['reqModule']; ?>', 'do': '<?php echo $settings['reqSubModule']; ?>' }, //aditional parameters
          noCache: true, //default is false, set to true to disable caching

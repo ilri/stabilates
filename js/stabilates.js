@@ -1,5 +1,5 @@
 var Main = {
-   passagesValidation: [], theme: '', curStabilate: { passages: [] },
+   passagesValidation: [], theme: '', curStabilate: { passages: [], synonyms: [] },
    reEscape: new RegExp('(\\' + ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'].join('|\\') + ')', 'g'),
    stabilatesValidation: [],  ajaxParams: {}
 };
@@ -99,6 +99,7 @@ var Stabilates = {
        });
        $('#footer_links').html('<button type="button" class="btn btn-medium btn-primary stabilate_save" value="save">Save Stabilate</button>\n\
    <button type="button" class="btn btn-medium btn-primary stabilate_cancel">Cancel</button>');
+       $("#synonym_list").jqxListBox({ source: [] });
        Stabilates.colorInputWithData();
     },
 
@@ -205,18 +206,42 @@ var Stabilates = {
     },
 
     /**
+     * Fetch stabilate data depending on the selected stabilate
+     * @returns {undefined}
+     */
+    fetchStabilatesData: function(value, data){
+      var params = 'stabilate_id='+ data.id +'&action=stabilate_data';
+      Notification.show({create:true, hide:false, updateText:false, text:'Fetching the stabilates data...', error:false});
+      $.ajax({
+         type:"POST", url:'mod_ajax.php?page=stabilates&do=browse', dataType:'json', async: false, data: params,
+         error:function(){
+            Notification.show({create:false, hide:true, updateText:true, text:'There was an error while communicating with the server', error:true});
+            return false;
+         },
+         success: function(data){
+            var mssg;
+            if(data.error) mssg = data.data+ ' Please try again.';
+            else mssg = 'Stabilate data fetched succesfully';
+            Notification.show({create:false, hide:true, updateText:true, text:mssg, error:data.error});
+            if(data.error === false) Stabilates.fillStabilatesData(data.data, data.synonyms);
+            $('#stabilateNo').focus();
+         }
+      });
+    },
+
+    /**
      * Fill the stabilates meta-data on selecting a particular stabilate
      *
      * @param  string   value    The selected id
      * @param  object   data     The object with the selected data
      * @returns {undefined}
      */
-    fillStabilatesData: function(value, data){
+    fillStabilatesData: function(data, synonyms){
        //stabilates info
        $('#stabilateNo').val(data.stab_no);
        $('#hostId').val(data.host);
        $('#localityId').val(data.locality);
-       $('#isolation_date').val(data.isolation_date);
+       $('[name=isolation_date]').val(data.isolation_date);
        $('#isolatedBy').val(data.isolated);
        $('#variableAntigenId').val(data.variable_antigen);
        $('#originCountryId').val(data.country);
@@ -240,10 +265,15 @@ var Stabilates = {
        $('#strainMorphology').val(data.strain_morphology);
        $('#strainCount').val(data.strain_count);
 
+       //synonyms
+       var source = [];
+       $.each(synonyms, function(){ source[source.length] = this.name; });
+       $("#synonym_list").jqxListBox({ source: source });
+
        Stabilates.colorInputWithData();
        Main.curStabilateId = data.id;
        //for editing stabilates
-       Main.curStabilate = {};
+       Main.curStabilate = {synonyms: synonyms};
        Main.curStabilate.id = data.id;
        Stabilates.initiatePassageDetails(data.id);
        //show the passages tab
@@ -349,7 +379,7 @@ var Stabilates = {
                Stabilates.clearStabilatesData();
                Stabilates.clearPassagesData();
                Stabilates.colorInputWithData();
-               Main.curStabilate = { passages: [] };
+               Main.curStabilate = { passages: [], synonyms: [] };
             }
             $('#stabilateNo').focus();
          }
@@ -486,5 +516,23 @@ var Stabilates = {
          // setup the chart
          $('#'+ t.id).jqxChart(settings);
       });
+   },
+
+   /**
+    * Initiates the process of adding a new synonym to a stabilate
+    *
+    * @param {type} event
+    * @returns {unresolved}
+    */
+   addSynonym: function(event){
+      if(event.which !== 13) return;
+      var synonym = $('#synonym').val();
+      if(Main.curStabilate.synonyms === undefined) Main.curStabilate.synonyms = [];
+      Main.curStabilate.synonyms[Main.curStabilate.synonyms.length] = {name: synonym};
+      var source = [];
+      $.each(Main.curStabilate.synonyms, function(){ source[source.length] = this.name; });
+
+      $("#synonym_list").jqxListBox({ source: source });
+      $('#synonym').val('').focus();
    }
 };
