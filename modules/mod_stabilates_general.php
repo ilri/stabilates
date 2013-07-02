@@ -101,6 +101,7 @@ class Stabilates extends DBase {
          elseif(OPTIONS_REQUESTED_ACTION == 'list_stabilates') $this->FetchData();
          elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_data') $this->FetchData();
          elseif(OPTIONS_REQUESTED_ACTION == 'yellow_form') $this->CreateStabilatesYellowForm();
+         elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_history') $this->StabilateHistory();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'browse') $this->BrowseStabilates();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'fetch') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'passages') $this->FetchData();
@@ -617,10 +618,10 @@ class Stabilates extends DBase {
    <legend>Stabilates</legend>
    <div class='left'>
       <div class="control-group">
-         <label class="control-label" for="stabilateNo">Stabilate</label>
+         <label class="control-label" for="stabilateNo">Stabilate&nbsp;&nbsp;<a href="javascript:;" class="view_form">Form</a></label>
          <div class="controls">
             <input type="text" id="stabilateNo" placeholder="Stabilate" class='input-medium'>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />&nbsp;&nbsp;
-            <a href="javascript:;" class="view_form">Form</a>
+            <a href="javascript:;" class="view_history">History</a>
          </div>
       </div>
       <div class="control-group">
@@ -883,6 +884,7 @@ $(document).ready(function () {
    Stabilates.initiatePassageDetails();
 
    $('.view_form').click(Stabilates.viewYellowForm);
+   $('.view_history').click(Stabilates.viewStabilateHistory);
    $('#passages_tab').jqxTabs({ width: '100%', height: 310, position: 'top', theme: Main.theme });
    $('#passages_tab').live('selecting', function (event) {
       if(event.args.item === 1){
@@ -1265,6 +1267,9 @@ $(document).ready(function () {
       $this->CreateStabilatesYellowForm();
    }
 
+   /**
+    * Spits out a mimick of the yellow form
+    */
    private function CreateStabilatesYellowForm(){
       //lets fetch the data for the form
       $query = 'select a.*, b.parasite_name, c.host_name, d.country_name, "N/A" as ln_location, e.host_name, f.method_name as isolation_method, g.method_name as preservation_method, h.user_names, i.country_name
@@ -1341,6 +1346,47 @@ $(document).ready(function () {
    </table>
 </div>
 <?php
+   }
+
+   private function StabilateHistory(){
+      $stabilateId = $_POST['stabilate_id'];
+      $history = array();
+      $query = 'select id, stab_no from stabilates where id = :stab';
+      $res = $this->Dbase->ExecuteQuery($query, array('stab' => $stabilateId));
+      if($res == 1) return die('Error');
+      $history[] = array('start_id' => $res[0]['id'], 'starting_stabilate' => $res[0]['stab_no']);
+
+      while(1){
+         $passes = $this->StabilateParent($stabilateId);
+         if(!$passes || count($passes) == 0) break;
+         else{
+            //get the stabilate id of the parent
+            $query = 'select id from stabilates where stab_no = :stab';
+            $res = $this->Dbase->ExecuteQuery($query, array('stab' => $passes['parent_stab']));
+            if($res == 1) return die('Error');
+            $stabilateId = $res[0]['id'];
+
+            //add it to the history
+            $passes['parent_id'] = $stabilateId;
+            $history[] = $passes;
+         }
+      }
+      die(json_encode(array('error' => false, 'data' => $history)));
+   }
+
+   private function StabilateParent($stabilateId){
+      $query = 'select passage_no, inoculum_ref from passages where stabilate_ref = :stab_id order by passage_no';
+      $res = $this->Dbase->ExecuteQuery($query, array('stab_id' => $stabilateId));
+      if($res == 1) return die('Error');
+      elseif(count($res) == 0) return array();
+
+      $passages = array();
+      foreach($res as $t){
+         if($t['passage_no'] == 1) $passages['parent_stab'] = $t['inoculum_ref'];
+      }
+      $passages['count'] = count($res);
+
+      return $passages;
    }
 }
 ?>

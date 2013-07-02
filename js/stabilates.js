@@ -580,5 +580,42 @@ var Stabilates = {
             CustomMssgBox.createMessageBox({okText: 'ok', message: data, callBack: Common.closeMessageBox, cancelButton: false, customTitle: 'Details for '+ $('#stabilateNo').val().toUpperCase(), width: 1060});
          }
       });
+   },
+
+   viewStabilateHistory: function(){
+      if(Main.curStabilate.id === undefined){
+         Notification.show({create:true, hide:true, updateText:false, text:'Error! Search for a stabilate first before requesting for its form.', error:true});
+         return;
+      }
+
+      //get the history
+      var params = 'stabilate_id='+ Main.curStabilate.id +'&action=stabilate_history';
+      Notification.show({create:true, hide:false, updateText:false, text:'Fetching the history...', error:false});
+      $.ajax({
+         type:"POST", url:'mod_ajax.php?page=stabilates&do=browse', dataType:'json', async: false, data: params,
+         error:function(){
+            Notification.show({create:false, hide:true, updateText:true, text:'There was an error while communicating with the server', error:true});
+            return false;
+         },
+         success: function(data){
+            var mssg, content, all = '';
+            if(data.error) mssg = data.data+ ' Please try again.';
+            else mssg = 'Fetched succesfully';
+            Notification.show({create:false, hide:true, updateText:true, text:mssg, error:data.error});
+            CustomMssgBox.createMessageBox({okText: 'ok', message: "<div id='stab_history'></div>", callBack: Common.closeMessageBox, cancelButton: false, customTitle: 'History for '+ $('#stabilateNo').val().toUpperCase(), width: 250});
+
+            $.each(data.data, function(i, item){
+               if(i === 0){
+                  content = "<div class='stabilate'>"+ item.starting_stabilate +'</div>';
+               }
+               else{
+                  content = "<div class='stabilate'>"+ item.parent_stab +'</div>';
+                  content += "<div class='passages'><img src='images/down_arrow.png' />"+ item.count +' Passage(s)</div>';
+               }
+               all = content + all;
+            });
+            $('#stab_history').html(all);
+         }
+      });
    }
 };

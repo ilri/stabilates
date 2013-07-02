@@ -260,3 +260,21 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
    font-weight: bold;
    padding-left: 45px;
 }
+
+#stab_history{
+   text-align: center;
+   margin: 20px 0px 20px 20px;
+}
+
+#alertWindow .stabilate{
+   border: 1px dotted black;
+   font-weight: bold;
+   padding: 2px 5px;
+   width: 50%;
+   margin-left: 20px;
+}
+
+#stab_history .passages{
+   border: none;
+   margin: 0px;
+}
