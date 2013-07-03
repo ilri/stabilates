@@ -278,3 +278,13 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
    border: none;
    margin: 0px;
 }
+
+.control-group .stab_input{
+   float: left;
+   margin-left: 10px;
+}
+
+.stab_links{
+   width: 70px;
+   margin-left: 295px;
+}

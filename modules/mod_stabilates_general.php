@@ -619,10 +619,10 @@ class Stabilates extends DBase {
    <div class='left'>
       <div class="control-group">
          <label class="control-label" for="stabilateNo">Stabilate&nbsp;&nbsp;<a href="javascript:;" class="view_form">Form</a></label>
-         <div class="controls">
-            <input type="text" id="stabilateNo" placeholder="Stabilate" class='input-medium'>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />&nbsp;&nbsp;
-            <a href="javascript:;" class="view_history">History</a>
+         <div class="stab_input controls">
+            <input type="text" id="stabilateNo" placeholder="Stabilate" class='input-medium'>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
          </div>
+         <div class="stab_links"><a href="javascript:;" class="view_history">History</a><br /><a href="javascript:;" class="view_full_history">Full History</a></div>
       </div>
       <div class="control-group">
          <label class="control-label" for="hostId">Host</label>
