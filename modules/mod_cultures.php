@@ -147,7 +147,7 @@ class Cultures{
 $(document).ready(function () {
    $('#date_stored').jqxDateTimeInput({ width: '150px', height: '25px', theme: Main.theme, formatString: "dd-MM-yyyy",
       minDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1960, 0, 1)),
-      maxDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(2003, 0, 1)),
+      maxDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(2010, 0, 1)),
       value: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1900, 0, 1))
    });
    $('[type=button]').live('click', Cultures.buttonClicked);
