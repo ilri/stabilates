@@ -156,7 +156,7 @@ var Stabilates = {
           });
           $('#passageNo').val('');
           if(inoculumType === 'Stabilate'){
-             if(passageCount !== 0){
+             if(passageCount !== 0 && Main.curPassageId === undefined){    //we are editing the passage
                 var mssg = sprintf('Error! An inoculum source can only be a stabilate if it is the first passage/inoculation. This is the %d passage.', passageCount+1);
                 $(this).val(0);
                 Notification.show({create:true, hide:true, updateText:false, text:mssg, error:true});
