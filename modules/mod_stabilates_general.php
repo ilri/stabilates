@@ -121,11 +121,17 @@ class Stabilates extends DBase {
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'yellow_form') $this->StabilatesYellowForm();
          elseif(in_array(OPTIONS_REQUESTED_SUB_MODULE, array('parasite_stats', 'host_stats', 'country_stats'))) $this->FetchData();
       }
+      
       elseif(OPTIONS_REQUESTED_MODULE == 'cultures'){
          require_once 'mod_cultures.php';
          $Cultures = new Cultures($this->Dbase);
          $Cultures->TrafficController();
 
+      }
+      elseif(OPTIONS_REQUESTED_MODULE == 'tick_materials'){
+         require_once 'mod_tick_materials.php';
+         $Ticks = new tick_materials($this->Dbase);
+         $Ticks->TrafficController();
       }
       elseif(OPTIONS_REQUESTED_MODULE == 'users'){
          require_once 'mod_users.php';
@@ -151,7 +157,7 @@ class Stabilates extends DBase {
       $count = (!isset($_POST['count'])) ? 0 : $_POST['count']+1 ;
       $hidden = "<input type='hidden' name='count' value='$count' />";
       if($addinfo == '') $addinfo = 'Please enter your username and password to access the biorepository resources.';
-      if(OPTIONS_REQUEST_TYPE == 'normal') echo "<script type='text/javascript' src='". OPTIONS_COMMON_FOLDER_PATH ."jquery.md5.js'></script>";
+      if(OPTIONS_REQUEST_TYPE == 'normal') echo "<script type='text/javascript' src='". OPTIONS_COMMON_FOLDER_PATH ."jquery/jquery.md5.js'></script>";
       if($count == Config::$psswdSettings['maxNoofTries']){
          $this->LockAccount();
          $addinfo .= "<br />You have had $count attempts. <b>Your account is disabled.</b>" . Config::$contact;
@@ -321,6 +327,7 @@ class Stabilates extends DBase {
       <li><a href='?page=stabilates&do=list'>List Saved Stabilates</a></li>
       <li><a href='?page=stabilates&do=yellow_form'>Stabilates Yellow Form</a></li>
       <li><a href='?page=cultures&do=browse'>Cultures</a></li>
+      <li><a href='?page=tick_materials&do=browse'>Tick Materials</a></li>
       <?php
          echo $this->ChangeCredentialsLink();
        ?>
