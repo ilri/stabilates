@@ -7,7 +7,7 @@ html{
 }
 
 body {
-    color: #000000;
+    color: #444444;
     background-color:#f1f1f1;
 }
 
@@ -202,6 +202,10 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
    float: left;
    margin: 5px;
 }
+
+dl{
+   margin-bottom: 2px;
+}
 /**************************Bootstrap changes***************************/
 
 #yellow_form table{
@@ -263,7 +267,11 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
 
 #stab_history{
    text-align: center;
-   margin: 20px 0px 20px 20px;
+   margin: 0px 20px;
+}
+
+#stab_info{
+   height: 80px;
 }
 
 #alertWindow .stabilate{
@@ -272,6 +280,13 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
    padding: 2px 5px;
    width: 50%;
    margin-left: 20px;
+}
+
+.default_titleBar{
+   height: 30px;
+   font-size: 1.3em;
+   padding-top: 10px;
+   border-bottom: 0.5px dotted #D0D0D0;
 }
 
 #stab_history .passages{
@@ -287,4 +302,20 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
 .stab_links{
    width: 70px;
    margin-left: 295px;
+}
+
+.left_align{
+   float: left;
+}
+
+circle.node {
+  cursor: pointer;
+  stroke: #000;
+  stroke-width: .5px;
+}
+
+line.link {
+  fill: none;
+  stroke: #9ecae1;
+  stroke-width: 1.5px;
 }

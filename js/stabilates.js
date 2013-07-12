@@ -617,5 +617,49 @@ var Stabilates = {
             $('#stab_history').html(all);
          }
       });
+   },
+
+   viewStabilateFullHistory: function(){
+      if(Main.curStabilate.id === undefined){
+         Notification.show({create:true, hide:true, updateText:false, text:'Error! Search for a stabilate first before requesting for its form.', error:true});
+         return;
+      }
+
+      //get the history
+      var params = 'stabilate_id='+ Main.curStabilate.id +'&action=stabilate_full_history';
+      Notification.show({create:true, hide:false, updateText:false, text:'Fetching the full history...', error:false});
+      $.ajax({
+         type:"POST", url:'mod_ajax.php?page=stabilates&do=browse', dataType:'json', async: false, data: params,
+         error:function(){
+            Notification.show({create:false, hide:true, updateText:true, text:'There was an error while communicating with the server', error:true});
+            return false;
+         },
+         success: function(data){
+            var mssg, content, all = '';
+            if(data.error) mssg = data.data+ ' Please try again.';
+            else mssg = 'Fetched succesfully';
+            Notification.show({create:false, hide:true, updateText:true, text:mssg, error:data.error});
+            CustomMssgBox.createMessageBox({
+               okText: 'ok', message: "<div id='stab_history'></div>", callBack: Common.closeMessageBox, cancelButton: false, customTitle: 'Full History for '+ $('#stabilateNo').val().toUpperCase(), width: 550, height: 450, overflow: 'hidden'
+            });
+
+            startVis(data.data);
+            return;
+
+            var levels = {}, levelCount = 0, align_class, curLevel;
+            $.each(data.data, function(i, item){
+               //get the level with the most nodes
+               if(levels[item.level] === undefined) levels[item.level] = 0;
+               levels[item.level] += 1;
+            });
+
+            //now start placing the items in the right places
+            var parentage = [];
+               $.each(data.data, function(j, item){
+                     parentage[parentage.length] = {name: item.stab_no, children: [], id: item.stab_id, parent: item.parent_id};
+               });
+
+         }
+      });
    }
 };

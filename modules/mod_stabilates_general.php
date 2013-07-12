@@ -16,7 +16,17 @@ class Stabilates extends DBase {
 
    public $addinfo;
 
+   /**
+    * @var  array    An array with the stabilate parentage
+    */
+   private $parentage = array();
+
    public $footerLinks = '';
+
+   /**
+    * @var  integer  The multiplying factor in determining the size of the circle. An arbitrary number
+    */
+   private $circleFactor = 732;
 
    /**
     * @var  string   Just a string to show who is logged in
@@ -102,6 +112,7 @@ class Stabilates extends DBase {
          elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_data') $this->FetchData();
          elseif(OPTIONS_REQUESTED_ACTION == 'yellow_form') $this->CreateStabilatesYellowForm();
          elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_history') $this->StabilateHistory();
+         elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_full_history') $this->StabilateFullHistory();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'browse') $this->BrowseStabilates();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'fetch') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'passages') $this->FetchData();
@@ -612,6 +623,13 @@ class Stabilates extends DBase {
 
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxdatetimeinput.js"></script>
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/globalization/jquery.global.js"></script>
+
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>d3/d3.min.js"></script>
+<script type="text/javascript" src="js/d3.geom.js"></script>
+<script type="text/javascript" src="js/d3.layout.js"></script>
+
+<script type="text/javascript" src="js/d3_visualization.js"></script>
+
 <div id="addinfo">&nbsp;</div>
 <form class='form-horizontal'>
 <fieldset class='stabilates'>
@@ -885,6 +903,7 @@ $(document).ready(function () {
 
    $('.view_form').click(Stabilates.viewYellowForm);
    $('.view_history').click(Stabilates.viewStabilateHistory);
+   $('.view_full_history').click(Stabilates.viewStabilateFullHistory);
    $('#passages_tab').jqxTabs({ width: '100%', height: 310, position: 'top', theme: Main.theme });
    $('#passages_tab').live('selecting', function (event) {
       if(event.args.item === 1){
@@ -1348,12 +1367,15 @@ $(document).ready(function () {
 <?php
    }
 
-   private function StabilateHistory(){
+   /**
+    * Get the narrow history of this stabilate up to the earliest grandfather
+    */
+   private function StabilateHistory($die = true){
       $stabilateId = $_POST['stabilate_id'];
       $history = array();
       $query = 'select id, stab_no from stabilates where id = :stab';
       $res = $this->Dbase->ExecuteQuery($query, array('stab' => $stabilateId));
-      if($res == 1) return die('Error');
+      if($res == 1) die('Error');
       $history[] = array('start_id' => $res[0]['id'], 'starting_stabilate' => $res[0]['stab_no']);
 
       while(1){
@@ -1363,7 +1385,7 @@ $(document).ready(function () {
             //get the stabilate id of the parent
             $query = 'select id from stabilates where stab_no = :stab';
             $res = $this->Dbase->ExecuteQuery($query, array('stab' => $passes['parent_stab']));
-            if($res == 1) return die('Error');
+            if($res == 1) die('Error');
             $stabilateId = $res[0]['id'];
 
             //add it to the history
@@ -1371,7 +1393,8 @@ $(document).ready(function () {
             $history[] = $passes;
          }
       }
-      die(json_encode(array('error' => false, 'data' => $history)));
+      if($die) die(json_encode(array('error' => false, 'data' => $history)));
+      else return $history;
    }
 
    private function StabilateParent($stabilateId){
@@ -1380,13 +1403,129 @@ $(document).ready(function () {
       if($res == 1) return die('Error');
       elseif(count($res) == 0) return array();
 
-      $passages = array();
+      $passages = array('stab_id' => $stabilateId);
       foreach($res as $t){
          if($t['passage_no'] == 1) $passages['parent_stab'] = $t['inoculum_ref'];
       }
       $passages['count'] = count($res);
 
       return $passages;
+   }
+
+   /**
+    * Get a full history of this stabilate, including all the stabilates that it is related to
+    */
+   private function StabilateFullHistory(){
+      /**
+       * This is a big one. We have one stabilate and we want to get all the related stabilates. This is tricky in that the stabilate can
+       * be in the middle of the stack and we have to get all its parents and the stabilates that are related to the stabilates. At the end
+       * we shall have one big structure.
+       *
+       * Now to the algorithm
+       * - We first get the great great grand dad of this stabilates. After getting this grand dad, we start traversing the database and get
+       * children and then the children's children and the children's children, etc.
+       *
+       * - In terms of the data structures, all the stabilates will be stored in an array. Each stabilate is a node in the array having the
+       * attributes {level, stabilate_id, children}
+       */
+
+      //get the brief history of the stabilate to the earliest grand dad
+      $history = $this->StabilateHistory(false);
+
+      //get the first of all stabilates..... mwanzilishi
+      end($history);
+      $origin = current($history);   //the first of all stabilates..... mwanzilishi
+
+      $moreChildren = true;
+      if(count($history) == 1) $this->parentage[$origin['start_id']] = array('stab_id' => $origin['start_id'], 'name' => $origin['starting_stabilate'], 'level' => 0, 'parent_id' => NULL);
+      else $this->parentage[$origin['parent_id']] = array('stab_id' => $origin['parent_id'], 'name' => $origin['parent_stab'], 'level' => 0, 'parent_id' => NULL);
+
+      //now get the children of this stabilate
+      $level = 0;
+      while($moreChildren){
+         $moreChildren = false;     //just allow the execution to reach here....
+         foreach($this->parentage as $node){
+            if($node['level'] == $level){ //we are in the right place to look for the grand children
+               $more = $this->StabilateChildren($node['stab_id'], $level+1);
+               if($moreChildren == false && $more == true) $moreChildren = true;    //if we find children even in one instance... we are in for another round
+            }
+         }
+         $level++;
+      }
+
+      //lets group the nodes in terms of parent->children
+      for( ;$level > -1; $level--){
+         foreach($this->parentage as $nodeId => $node){
+            //get all the nodes at this level and append them to their parents and then delete them from the parentage
+            if($level == 0){
+               $finalParentage = array('name' => $node['name'], 'children' => $node['children'], 'passages' => 0);
+            }
+            elseif($node['level'] == $level){
+               //add this to its parent as a child
+               if(!isset($this->parentage[$node['parent_id']]['children'])) $this->parentage[$node['parent_id']]['children'] = array();
+               $this->parentage[$node['parent_id']]['children'][] = $node;
+               unset($this->parentage[$nodeId]);
+            }
+         }
+      }
+
+      $finalParentage['children'] = $this->PassagesCount($finalParentage['children'], 0);
+      $finalParentage['parent'] = 'Origin';
+
+
+      //we are all but done here... print our findings
+//      die(json_encode(array('error' => false, 'data' => $this->parentage)));
+      die(json_encode(array('error' => false, 'data' => $finalParentage)));
+   }
+
+   /**
+    * A recursive function that calculates the number of cumulative passages for each stabilate. It factors in all the stabilates from the first parent
+    *
+    * @param   array    $children         An array of the children for this stabilate
+    * @param   integer  $parentPassages   The number of passages that the parent stabilate has undergone
+    * @return  array    Returns the stabilate children with the correct number of total passages
+    */
+   private function PassagesCount($children, $parentPassages){
+      $new_children = array();
+      foreach($children as $node){
+         $node['passages'] += $parentPassages;
+         $node['size'] = $node['passages'] * $this->circleFactor;
+         if(isset($node['children'])){
+            $node['children'] = $this->PassagesCount($node['children'], $node['passages']);
+         }
+         $new_children[] = $node;
+      }
+      return $new_children;
+   }
+
+   /**
+    * Fetches the children of the current stabilate
+    *
+    * @param   integer  $stabilateId   The id of the stabilate that we are interested in
+    * @param   type     $level         The level of these stabilates
+    * @return  boolean  Returns true if there are more children in the stack, else returns false
+    */
+   private function StabilateChildren($stabilateId, $level){
+      $query = 'select stab_no from stabilates where id = :stab_id';
+      $res = $this->Dbase->ExecuteQuery($query, array('stab_id' => $stabilateId));
+      if($res == 1) die('Error');
+      elseif(count($res) == 0){
+         echo '<pre>'. print_r($this->parentage, true) .'</pre>';
+         echo "$query, $stabilateId";
+      }
+      $stab_no = $res[0]['stab_no'];
+
+      $query = "select a.id, a.stab_no, $stabilateId as parent_id, b.stabilate_ref from stabilates as a inner join passages as b on a.id=b.stabilate_ref where b.inoculum_ref = :stab_no";
+      $passages_query = 'select count(*) as passages from passages where stabilate_ref = :stab_ref group by stabilate_ref';
+      $children = $this->Dbase->ExecuteQuery($query, array('stab_no' => $stab_no));
+      if($children == 1) die('Error');
+      foreach($children as $child){
+         $passages_count = $this->Dbase->ExecuteQuery($passages_query, array('stab_ref' => $child['stabilate_ref']));
+         if($passages_count == 1) die('Error');
+         $this->parentage[$child['id']] = array('stab_id' => $child['id'], 'name' => $child['stab_no'], 'parent_id' => $stabilateId, 'parent' => $stab_no, 'level' => $level, 'passages' => $passages_count[0]['passages']);
+      }
+      if(count($children) != 0) return true;
+      else return false;
    }
 }
 ?>
