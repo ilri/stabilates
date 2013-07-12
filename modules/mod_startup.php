@@ -24,6 +24,7 @@ $sub_module = (isset($_GET['do']) && $_GET['do']!='') ? $_GET['do'] : '';
 $action = (isset($_POST['action']) && $_POST['action']!='') ? $_POST['action'] : '';
 $user = isset($_SESSION['user']) ? $_SESSION['user'] : '';
 
+
 define('OPTIONS_HOME_PAGE', $_SERVER['PHP_SELF']);
 define('OPTIONS_REQUESTED_MODULE', $paging);
 define('OPTIONS_CURRENT_USER', $user);
@@ -34,9 +35,11 @@ define('OPTIONS_REQUESTED_SUB_MODULE', $sub_module);
 define('OPTIONS_REQUESTED_ACTION', $action);
 $t = pathinfo($_SERVER['SCRIPT_FILENAME']);
 $requestType = ($t['basename'] == 'mod_ajax.php') ? 'ajax' : 'normal';
+
 define('OPTIONS_REQUEST_TYPE', $requestType);
 
-require_once 'modules/mod_stabilates_general.php';
+//require_once 'modules/mod_stabilates_general.php';
+require_once 'mod_stabilates_general.php';
 $Stabilates = new Stabilates();
 
 //lets initiate the sessions
