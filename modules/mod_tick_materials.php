@@ -3,12 +3,13 @@
 /**
  * A class that will manage all that relates to the tick materials
  *
- * @package    Users
+ * @package    Tick Materials
  * @author     Kihara Absolomon <a.kihara@cgiar.org>
+ * @author     Emmanuel Telewa <e.telewa@cgiar.org>
  * @since      v0.1
  *
  */
-class tick_materials {
+class TickMaterials extends Dbase{
 
     public $Dbase;
 
@@ -26,14 +27,11 @@ class tick_materials {
         //include the user js functions if need be
         if (OPTIONS_REQUEST_TYPE == 'normal') {
             echo "<script type='text/javascript'>$('#top_links .back_link').html('<a href=\'?page=home\' id=\'backLink\'>Back</a>');</script>";
-            echo "<script type='text/javascript' src='js/cultures.js'></script>";
+            echo "<script type='text/javascript' src='js/tick_material.js'></script>";
         }
-        if (isset($_GET['query']))
-            $this->FetchData();
-        elseif (OPTIONS_REQUESTED_ACTION == 'save')
-            $this->SaveCulture();
-        elseif (OPTIONS_REQUESTED_SUB_MODULE == 'browse')
-            $this->BrowseCulturesHome();
+        if (isset($_GET['query'])) $this->FetchData();
+        elseif (OPTIONS_REQUESTED_ACTION == 'save') $this->SaveCulture();
+        elseif (OPTIONS_REQUESTED_SUB_MODULE == 'browse') $this->BrowseTickMaterialHome();
     }
 
     /**
@@ -41,7 +39,7 @@ class tick_materials {
      *
      * @param   string   $addinfo    Any additional information that we might need to pass to the user
      */
-    private function BrowseCulturesHome($addinfo = '') {
+    private function BrowseTickMaterialHome($addinfo = '') {
         $error = '';
         $query = "select id, cell_name from cell_types";
         $res = $this->Dbase->ExecuteQuery($query);
@@ -65,194 +63,182 @@ class tick_materials {
         <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxdatetimeinput.js"></script>
         <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/globalization/jquery.global.js"></script>
 
-        <style>
-            .form-horizontal .control-label { width: 140px; }
-            .form-horizontal .controls { margin-left: 160px; }
-        </style>
-        <form class='form-horizontal'>
-            <fieldset class='cultures'>
+        <form class='form-horizontal' id="tick_material">
+            <fieldset id='tick_stabilates'>
                 <legend>Stabilate Record</legend>
-                <div class='left'>
+                <div class="left">
                     <div class="control-group">
                         <label class="control-label" for="stabilateNo">Stabilate No</label>
                         <div class="controls">
-                            <input type="text" id="storeNo" placeholder="Stabilate No" class='input-medium'>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
+                            <input type="text" id="stabilateNo" placeholder="Stabilate No" class='input-medium'>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
                         </div>
                     </div>
                     <div class="control-group">
                         <label class="control-label" for="parasite">Parasite</label>
                         <div class="controls">
-                            <input type="text" id="animalId" placeholder="Parasite" class='input-small'>
+                            <input type="text" id="parasite" placeholder="Parasite" class='input-small'>
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="material_frozen">Material Frozen</label>
+                        <label class="control-label" for="frozenMaterialId">Material Frozen</label>
                         <div class="controls">
-                            <input type="text" id="animalId" placeholder="Material Frozen" class='input-small'>
+                            <input type="text" id="material_frozen" placeholder="Material Frozen" class='input-medium' />
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="origin_of_infection">Origin of Infection</label>
+                        <label class="control-label" for="infectionOriginId">Origin of Infection</label>
                         <div class="controls">
-                            <input type="text" id="animalId" placeholder="Origin Of Infection" class='input-small'>
+                            <input type="text" id="infectionOriginId" placeholder="Origin Of Infection" class='input-medium' />
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="volume">Volume prepared before dispensing</label>
+                        <label class="control-label" for="volumePreparedId">Volume Prepared</label>
                         <div class="controls">
-                            <input type="text" id="animalId" placeholder="Volume" class='input-small'>
+                           <input type="text" id="volumePreparedId" placeholder="Volume" class='input-mini' />&nbsp; i.e. Before dispensing
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="medium_used">Medium Used</label>
+                        <label class="control-label" for="mediumUsedId">Medium Used</label>
                         <div class="controls">
-                            <input type="text" id="animalId" placeholder="Medium used" class='input-small'>
+                            <input type="text" id="mediumUsedId" placeholder="Medium used" class='input-large' />
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="no_stored">No Stored</label>
+                        <label class="control-label" for="noStoredId">No Stored</label>
                         <div class="controls">
-                            <input type="text" id="animalId" placeholder="No. Stored(Vials/Straws)" class='input-small'>
-                        </div>
-                    </div>
-                </div>
-                <div class='right'>
-                    <div class="control-group">
-                        <label class="control-label" for="preparation_date">Date Prepared</label>
-                        <div class="controls">
-                            <div id='preparation_date'></div>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label" for="stock">Stock</label>
-                        <div class="controls">
-                            <input type="text" id="animalId" placeholder="stock" class='input-small'>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label" for="source">Source</label>
-                        <div class="controls">
-                            <input type="text" id="animalId" placeholder="Source" class='input-small'>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label" for="cryoprotectant">Cryoprotectant</label>
-                        <div class="controls">
-                            <input type="text" id="animalId" placeholder="cryoprotectant" class='input-small'>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label" for="unit_volume">Unit Volume</label>
-                        <div class="controls">
-                            <input type="text" id="animalId" placeholder="Unit Volume" class='input-small'>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label" for="colour">Colour</label>
-                        <div class="controls">
-                            <input type="text" id="animalId" placeholder="Colour" class='input-small'>
+                            <input type="text" id="noStoredId" placeholder="No. Stored(Vials/Straws)" class='input-mini' />&nbsp;Vials/Straws
                         </div>
                     </div>
                 </div>
-            </fieldset> 
-            <fieldset class='cultures'>
-                <legend>For Guts Users Only</legend>
-                <div class='left'>
+                <div class="right">
                     <div class="control-group">
-                        <label class="control-label" for="no_ticks_ground">Number of ticks ground</label>
+                        <label class="control-label" for="preparationDateId">Date Prepared</label>
                         <div class="controls">
-                            <input type="text" id="animalId" placeholder="Number of ticks ground" class='input-small'>
-                        </div>
-                    </div>
-
-                    <div class="control-group">
-                        <label class="control-label" for="mean_infection_rate">Mean Infection Rate</label>
-                        <div class="controls">
-                            <input type="text" id="animalId" placeholder="Mean Infection Rate" class='input-small'>
-                        </div>
-                    </div>
-                </div>
-                <div class='right'>
-                    <div class="control-group">
-                        <label class="control-label" for="no_ticks_ml">No. Ticks/ML</label>
-                        <div class="controls">
-                            <input type="text" id="animalId" placeholder="Number of ticks ground" class='input-small'>
+                           <div id='preparationDateId'>&nbsp;</div>
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="infected_acini_tick">Infected Acini/Tick</label>
+                        <label class="control-label" for="stockId">Stock</label>
                         <div class="controls">
-                            <input type="text" id="animalId" placeholder="Infected Acini/Tick" class='input-small'>
-                        </div>
-                    </div>
-                </div>
-                <div class='left'>
-                    <div class="control-group">
-                        <label class="control-label" for="store_location">Storage Location and Reference</label>
-                        <div class="controls">
-                            <textarea rows="3" id='remarks' placeHolder='Storage Location and Reference'></textarea>
+                            <input type="text" id="stockId" placeholder="stock" class='input-small' />
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="remarks">Remarks</label>
+                        <label class="control-label" for="sourceId">Source</label>
                         <div class="controls">
-                            <textarea rows="3" id='remarks' placeHolder='Remarks'></textarea>
+                            <input type="text" id="sourceId" placeholder="Source" class='input-mini' /> (Animal Nos.)
                         </div>
                     </div>
-                </div>
-                <div style="clear: both"></div>
-                <div class='left'>
                     <div class="control-group">
-                        <label class="control-label" for="stabilate_testing">Stabilate Testing</label>
+                        <label class="control-label" for="cryoProtectantId">Cryo Protectant</label>
                         <div class="controls">
-                            <input type="text" id="animalId" placeholder="Stabilate Testing" class='input-small'>
+                            <input type="text" id="cryoProtectantId" placeholder="Cryo Protectant" class='input-medium' />
                         </div>
                     </div>
-                </div>
-                <div class='center'>
                     <div class="control-group">
-                        <label class="control-label" for="experiment_no">Experiment No.</label>
+                        <label class="control-label" for="unitVolumeId">Unit Volume</label>
                         <div class="controls">
-                            <input type="text" id="animalId" placeholder="Experiment No." class='input-small'>
+                            <input type="text" id="unitVolumeId" placeholder="Volume" class='input-mini' />
                         </div>
                     </div>
-                </div>
-                <div class='right'>
                     <div class="control-group">
-                        <label class="control-label" for="date">Date</label>
+                        <label class="control-label" for="colorId">Color</label>
                         <div class="controls">
-                            <div id='date'>date</div>
+                            <input type="text" id="colorId" placeholder="Color" class='input-small' />
                         </div>
                     </div>
                 </div>
             </fieldset>
+            <fieldset id='guts'>
+                <legend>For Guts Stabilates Only</legend>
+                <div class='left'>
+                    <div class="control-group">
+                        <label class="control-label" for="ticksGroundId">No. of ticks ground</label>
+                        <div class="controls">
+                            <input type="text" id="ticksGroundId" placeholder="No." class='input-mini' />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="infectionRateId">Mean Infection Rate</label>
+                        <div class="controls">
+                            <input type="text" id="infectionRateId" placeholder="No." class='input-mini' />
+                        </div>
+                    </div>
+                </div>
+                <div class='right'>
+                    <div class="control-group">
+                        <label class="control-label" for="noTicksId">No. Ticks/ML</label>
+                        <div class="controls">
+                            <input type="text" id="noTicksId" placeholder="No." class='input-mini' />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="infectedTickId">Infected Acini/Tick</label>
+                        <div class="controls">
+                            <input type="text" id="infectedTickId" placeholder="No." class='input-mini'>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset id="ticks_location">
+               <legend>Storage Location and Reference</legend>
+                <div class='left'>
+                    <div class="control-group">
+                        <label class="control-label" for="storageLocationId">Location and Reference</label>
+                        <div class="controls">
+                            <input type="text" id='storageLocationId' placeHolder='Location and Reference' class="input-xxlarge" />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="remarksId">Remarks</label>
+                        <div class="controls">
+                            <input type="text" id='remarksId' placeHolder='Remarks' class="input-xxlarge" />
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset id="stabilate_testing">
+               <legend>Stabilate Testing</legend>
+                <div class="control-group left">
+                    <label class="control-label" for="experimentNoId">Experiment No.</label>
+                    <div class="controls">
+                        <input type="text" id="experimentNoId" placeholder="No" class='input-mini' />
+                    </div>
+                </div>
+                <div class="control-group left">
+                    <label class="control-label" for="experimentDateId">Date</label>
+                    <div class="controls">
+                        <div id='experimentDateId'>&nbsp;</div>
+                    </div>
+                </div>
+            </fieldset>
             <div id='footer_links'>
-                <button class="btn btn-medium btn-primary culture_save" type="button" value="save">Save Tick Materials</button>
-                <button class="btn btn-medium btn-primary culture_cancel" type="button">Cancel</button>
+                <button class="btn btn-medium btn-primary tick_material_save" type="button" value="save">Save</button>
+                <button class="btn btn-medium btn-primary tick_material_cancel" type="button">Cancel</button>
             </div>
         </form>
 
         <script type='text/javascript'>
             $(document).ready(function() {
-                var date_inputs = ['date', 'preparation_date'];
+                var date_inputs = ['experimentDateId', 'preparationDateId'];
                 $.each(date_inputs, function(i, dateInput) {
-                    $('#' + dateInput).jqxDateTimeInput({width: '150px', height: '25px', theme: Main.theme, formatString: "yyyy-MM-dd",
+                    $('#' + dateInput).jqxDateTimeInput({width: '150px', height: '25px', theme: Main.theme, formatString: "dd-MM-yyyy",
                         minDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1960, 0, 1)),
-                        maxDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(2003, 0, 1)),
-                        value: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1900, 0, 1))
+                        maxDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(2011, 0, 1)),
+                        value: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1960, 0, 1))
                     });
                 });
-                $('[type=button]').live('click', Cultures.buttonClicked);
-                $('[type=select]').live('change', Cultures.changedSelection);
+                $('[type=button]').live('click', TickMaterial.buttonClicked);
+                $('[type=select]').live('change', TickMaterial.changedSelection);
             });
         </script>
         <?php
         echo "<script type='text/javascript' src='" . OPTIONS_COMMON_FOLDER_PATH . "jquery/jquery.autocomplete/jquery.autocomplete.js'></script>";
-        echo "<link rel='stylesheet' type='text/css' href='" . OPTIONS_COMMON_FOLDER_PATH . "jquery/jquery.autocomplete/styles.css' />";
+//        echo "<link rel='stylesheet' type='text/css' href='" . OPTIONS_COMMON_FOLDER_PATH . "jquery/jquery.autocomplete/styles.css' />";
 
         $ac = array(
-            array('sub_module' => 'store_number', 'id' => 'storeNo'),
-            array('sub_module' => 'animal_id', 'id' => 'animalId'),
+            array('sub_module' => 'store_number', 'id' => 'stabilateNo'),
+            array('sub_module' => 'animal_id', 'id' => 'parasiteId'),
             array('sub_module' => 'growth_medium', 'id' => 'growthMedium'),
             array('sub_module' => 'storage_medium', 'id' => 'storageMedium')
         );
@@ -261,7 +247,7 @@ class tick_materials {
         foreach ($ac as $t) {
             $settings = array('inputId' => $t['id'], 'reqModule' => 'cultures', 'reqSubModule' => $t['sub_module']);
             if ($t['id'] == 'storeNo')
-                $settings['selectFunction'] = 'Cultures.fillCultureData';
+                $settings['selectFunction'] = 'TickMaterial.fillStabilateData';
             $this->InitiateAutoComplete($settings);
         }
         echo "</script>";
@@ -272,7 +258,7 @@ class tick_materials {
      */
     private function InitiateAutoComplete($settings) {
         if ($settings['formatResult'] == '')
-            $settings['formatResult'] = 'Cultures.fnFormatResult';
+            $settings['formatResult'] = 'TickMaterial.fnFormatResult';
         if ($settings['visibleSuggestions'] == '')
             $settings['visibleSuggestions'] = true;
         if ($settings['beforeNewQuery'] == '')

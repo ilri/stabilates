@@ -121,7 +121,7 @@ class Stabilates extends DBase {
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'yellow_form') $this->StabilatesYellowForm();
          elseif(in_array(OPTIONS_REQUESTED_SUB_MODULE, array('parasite_stats', 'host_stats', 'country_stats'))) $this->FetchData();
       }
-      
+
       elseif(OPTIONS_REQUESTED_MODULE == 'cultures'){
          require_once 'mod_cultures.php';
          $Cultures = new Cultures($this->Dbase);
@@ -130,7 +130,7 @@ class Stabilates extends DBase {
       }
       elseif(OPTIONS_REQUESTED_MODULE == 'tick_materials'){
          require_once 'mod_tick_materials.php';
-         $Ticks = new tick_materials($this->Dbase);
+         $Ticks = new TickMaterials($this->Dbase);
          $Ticks->TrafficController();
       }
       elseif(OPTIONS_REQUESTED_MODULE == 'users'){
