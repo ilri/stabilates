@@ -7,7 +7,7 @@ html{
 }
 
 body {
-    color: #000000;
+    color: #444444;
     background-color:#f1f1f1;
 }
 
@@ -103,7 +103,7 @@ body {
    text-align: center;
 }
 
-#stabilates .left{
+#stabilates .left, #tick_material fieldset .left{
    float: left;
    margin: 0px;
 }
@@ -115,6 +115,16 @@ body {
 
 #stabilates .right{
    margin: 0px 0px 0px 15px;
+}
+
+#tick_stabilates .left, #guts .left{
+   width: 40%;
+}
+
+#tick_stabilates .right, #guts .right{
+   margin-left: 15px;
+   width: 40%;
+   float: left;
 }
 
 #main_div .stabilates textarea, #passages_tab textarea{
@@ -202,6 +212,31 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
    float: left;
    margin: 5px;
 }
+
+dl{
+   margin-bottom: 2px;
+}
+
+#ticks_location .controls{
+   margin-left: 180px;
+}
+
+#tick_stabilates .controls, #guts .controls{
+   margin-left: 140px;
+}
+
+#ticks_location .control-label{
+   width: 170px;
+}
+
+#tick_stabilates .control-label, #guts .control-label{
+   width: 130px;
+}
+
+#tick_material fieldset{
+   margin: 30px 20px 10px 20px;
+   border-bottom: none;
+}
 /**************************Bootstrap changes***************************/
 
 #yellow_form table{
@@ -263,7 +298,11 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
 
 #stab_history{
    text-align: center;
-   margin: 20px 0px 20px 20px;
+   margin: 0px 20px;
+}
+
+#stab_info{
+   height: 80px;
 }
 
 #alertWindow .stabilate{
@@ -272,6 +311,13 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
    padding: 2px 5px;
    width: 50%;
    margin-left: 20px;
+}
+
+.default_titleBar{
+   height: 30px;
+   font-size: 1.3em;
+   padding-top: 10px;
+   border-bottom: 0.5px dotted #D0D0D0;
 }
 
 #stab_history .passages{
@@ -287,4 +333,20 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
 .stab_links{
    width: 70px;
    margin-left: 295px;
+}
+
+.left_align{
+   float: left;
+}
+
+circle.node {
+  cursor: pointer;
+  stroke: #000;
+  stroke-width: .5px;
+}
+
+line.link {
+  fill: none;
+  stroke: #9ecae1;
+  stroke-width: 1.5px;
 }
