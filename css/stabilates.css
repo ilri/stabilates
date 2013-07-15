@@ -3,7 +3,7 @@ root {
 }
 
 html{
-	overflow: -moz-scrollbars-vertical;
+    overflow: -moz-scrollbars-vertical;
 }
 
 body {
@@ -12,77 +12,77 @@ body {
 }
 
 -moz-any-link:focus {
-  border: none;
+    border: none;
 }
 
 #addinfo, #top_tip{
-   margin: 2px 5px;
-   width: max-content;
-   padding: 2px;
-   text-align: center;
+    margin: 2px 5px;
+    width: max-content;
+    padding: 2px;
+    text-align: center;
 }
 
 #addinfo{
-   border: none;
+    border: none;
 }
 
 #stabilates{
-   margin: 5px auto 2px;
-   border: 1px solid silver;
-   width: 1050px;
-   background-color:white;
+    margin: 5px auto 2px;
+    border: 1px solid silver;
+    width: 1050px;
+    background-color:white;
 }
 
 #header{
-   padding:0px;
-   text-align: center;
-   margin: 5px;
-   height: 142px;
-   vertical-align: middle;
-   border-bottom:1px gray solid;
-   background-image: url("../images/bannerbiotech.jpg");
+    padding:0px;
+    text-align: center;
+    margin: 5px;
+    height: 142px;
+    vertical-align: middle;
+    border-bottom:1px gray solid;
+    background-image: url("../images/bannerbiotech.jpg");
 }
 
 #notification_box{
-	text-align: right;
-	margin-left: 50%;
-	font-size: 13px;
-	font-weight: bold;
-   top: 35px;
-   z-index:999;
-   width:435px;
-   position: fixed;
+    text-align: right;
+    margin-left: 50%;
+    font-size: 13px;
+    font-weight: bold;
+    top: 35px;
+    z-index:999;
+    width:435px;
+    position: fixed;
 }
 
 #notification_box span{
-	background-color: #CCFF99;
+    background-color: #CCFF99;
 }
 
 /* Login Page*/
 #stabilates #login_page, #login_page table{
-   text-align: center;
+    text-align: center;
 }
 
 #login_page table{
-   margin: 2px auto;
+    margin: 2px auto;
 }
 
 #login_page td{
-   padding:5px 2px;
+    padding:5px 2px;
 }
 
 #login_page .buttons{
-   padding-left: 50px;
+    padding-left: 50px;
 }
 /* Login Page*/
 
 .home, .back_link{
-   float: left;
-   margin-right: 5px;
+    float: left;
+    margin-right: 5px;
 }
 
 #top_links{
-   padding: 0px 5px;
+    padding: 0px 5px;
 }
 
 #whoisme {
@@ -92,184 +92,190 @@ body {
 }
 
 #footer{
-   text-align: right;
-   padding: 10px;
-   border-top: 1px solid #D0D0D0;
-   margin-top: 5px;
+    text-align: right;
+    padding: 10px;
+    border-top: 1px solid #D0D0D0;
+    margin-top: 5px;
 }
 
 #credits{
-   font-size: 1em;
-   text-align: center;
+    font-size: 1em;
+    text-align: center;
 }
 
 #stabilates .left, #tick_material fieldset .left{
-   float: left;
-   margin: 0px;
+    float: left;
+    margin: 0px;
 }
 
 #stabilates .center{
-   float: left;
-   margin: 0px 15px 0px 15px;
+    float: left;
+    margin: 0px 15px 0px 15px;
 }
 
 #stabilates .right{
-   margin: 0px 0px 0px 15px;
+    margin: 0px 0px 0px 15px;
 }
 
 #tick_stabilates .left, #guts .left{
-   width: 40%;
+    width: 40%;
+}
+
+#cellines .right{
+    margin-left: 140px;
+    width: 40%;
+    float: left;
 }
 
 #tick_stabilates .right, #guts .right{
-   margin-left: 15px;
-   width: 40%;
-   float: left;
+    margin-left: 15px;
+    width: 40%;
+    float: left;
 }
 
 #main_div .stabilates textarea, #passages_tab textarea{
-   width: 295px;
-   height: 180px;
+    width: 295px;
+    height: 180px;
 }
 
-#main_div .cultures textarea{
-   width: 600px;
-   height: 70px;
+#main_div .cultures textarea, #cellines textarea{
+    width: 600px;
+    height: 70px;
 }
 
 fieldset, .passages{
-   border-bottom: 1px solid #D0D0D0;
-   margin: 15px 0px;
+    border-bottom: 1px solid #D0D0D0;
+    margin: 15px 0px;
 }
 
 #footer_links{
-   text-align: center;
+    text-align: center;
 }
 
 .form-horizontal .strain{
-   border: none;
-   width: 700px;
-   float: left;
+    border: none;
+    width: 700px;
+    float: left;
 }
 
 .form-horizontal .synonyms{
-   border: none;
-   width: auto;
-   margin-top: 30px;
+    border: none;
+    width: auto;
+    margin-top: 30px;
 }
 
 #stab_synonyms{
-   border-left: 1px solid #D0D0D0;
-   min-height: 200px;
+    border-left: 1px solid #D0D0D0;
+    min-height: 200px;
 }
 
 #home .center{
-   float: none;
-   font-size: 1.5em;
+    float: none;
+    font-size: 1.5em;
 }
 
 .center{
-   text-align: center;
+    text-align: center;
 }
 
 #home ul{
-   margin-left: 70px;
+    margin-left: 70px;
 }
 
 #list_stabilates{
-   margin: 15px 60px;
+    margin: 15px 60px;
 }
 
 #parasites, #hosts, #countries{
-   width: 600px;
-   height: 400px;
-   margin: 10px 170px;
+    width: 600px;
+    height: 400px;
+    margin: 10px 170px;
 }
 /**************************Bootstrap changes***************************/
 select, textarea, input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input{
-   height: 30px;
+    height: 30px;
 }
 
 .form-horizontal .control-label{
-   width: 110px;
+    width: 110px;
 }
 
 .form-horizontal .controls{
-   margin-left: 120px;
+    margin-left: 120px;
 }
 
 .form-horizontal .control-group{
-   margin-bottom: 5px;
+    margin-bottom: 5px;
 }
 
 .form-horizontal .nav{
-   text-align: center;
-   margin-left: 35%;
-   width: 40%;
+    text-align: center;
+    margin-left: 35%;
+    width: 40%;
 }
 
 .form-horizontal .nav li{
-   float: left;
-   margin: 5px;
+    float: left;
+    margin: 5px;
 }
 
 dl{
-   margin-bottom: 2px;
+    margin-bottom: 2px;
 }
 
-#ticks_location .controls{
-   margin-left: 180px;
+#ticks_location .controls, #cellines .controls{
+    margin-left: 180px;
 }
 
-#tick_stabilates .controls, #guts .controls{
-   margin-left: 140px;
+#tick_stabilates .controls, #guts .controls, #cellines .controls{
+    margin-left: 140px;
 }
 
 #ticks_location .control-label{
-   width: 170px;
+    width: 170px;
 }
 
-#tick_stabilates .control-label, #guts .control-label{
-   width: 130px;
+#tick_stabilates .control-label, #guts .control-label, #cellines .control-label{
+    width: 130px;
 }
 
-#tick_material fieldset{
-   margin: 30px 20px 10px 20px;
-   border-bottom: none;
+#tick_material fieldset, #cellines fieldset{
+    margin: 30px 20px 10px 20px;
+    border-bottom: none;
 }
 /**************************Bootstrap changes***************************/
 
 #yellow_form table{
-   margin: 8px 5px;
-   width: 99%;
-   background-color: #EFEF9A;
-   color: #0A08A9;
-   font-family: Times New Roman;
-   border: 0.5px solid black;
+    margin: 8px 5px;
+    width: 99%;
+    background-color: #EFEF9A;
+    color: #0A08A9;
+    font-family: Times New Roman;
+    border: 0.5px solid black;
 }
 
 #main_table{
-   width: 1020px;
+    width: 1020px;
 }
 
 #main_table td, #main_table th{
-   font-weight: normal;
-   border: none;
+    font-weight: normal;
+    border: none;
 }
 
 #isolation td, #maintenance td, #maintenance th, #preservation td, #strain td, #other td, #other th{
-   border-collapse: collapse;
-   border: 0.5px solid #A6A5E1;
+    border-collapse: collapse;
+    border: 0.5px solid #A6A5E1;
 }
 
 #yellow_form .vertical{
-   writing-mode: tb-rl;
-   filter: flipv fliph;
-   -webkit-transform:rotate(-90deg);
-   -moz-transform: rotate(-90deg);
-   -ms-transform: rotate(-90deg);
-   -o-transform: rotate(-90deg);
-   transform: rotate(-90deg);
+    writing-mode: tb-rl;
+    filter: flipv fliph;
+    -webkit-transform:rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    transform: rotate(-90deg);
 
     text-align: center;
     vertical-align: middle;
@@ -279,74 +285,74 @@ dl{
 }
 
 #yellow_form .isol_1{
-   width: 45%;
+    width: 45%;
 }
 
 #yellow_form .strain_1{
-   width: 10%;
+    width: 10%;
 }
 
 #yellow_form .top_align{
-   vertical-align: top;
+    vertical-align: top;
 }
 
 #yellow_form .data{
-   color: black;
-   font-weight: bold;
-   padding-left: 45px;
+    color: black;
+    font-weight: bold;
+    padding-left: 45px;
 }
 
 #stab_history{
-   text-align: center;
-   margin: 0px 20px;
+    text-align: center;
+    margin: 0px 20px;
 }
 
 #stab_info{
-   height: 80px;
+    height: 80px;
 }
 
 #alertWindow .stabilate{
-   border: 1px dotted black;
-   font-weight: bold;
-   padding: 2px 5px;
-   width: 50%;
-   margin-left: 20px;
+    border: 1px dotted black;
+    font-weight: bold;
+    padding: 2px 5px;
+    width: 50%;
+    margin-left: 20px;
 }
 
 .default_titleBar{
-   height: 30px;
-   font-size: 1.3em;
-   padding-top: 10px;
-   border-bottom: 0.5px dotted #D0D0D0;
+    height: 30px;
+    font-size: 1.3em;
+    padding-top: 10px;
+    border-bottom: 0.5px dotted #D0D0D0;
 }
 
 #stab_history .passages{
-   border: none;
-   margin: 0px;
+    border: none;
+    margin: 0px;
 }
 
 .control-group .stab_input{
-   float: left;
-   margin-left: 10px;
+    float: left;
+    margin-left: 10px;
 }
 
 .stab_links{
-   width: 70px;
-   margin-left: 295px;
+    width: 70px;
+    margin-left: 295px;
 }
 
 .left_align{
-   float: left;
+    float: left;
 }
 
 circle.node {
-  cursor: pointer;
-  stroke: #000;
-  stroke-width: .5px;
+    cursor: pointer;
+    stroke: #000;
+    stroke-width: .5px;
 }
 
 line.link {
-  fill: none;
-  stroke: #9ecae1;
-  stroke-width: 1.5px;
+    fill: none;
+    stroke: #9ecae1;
+    stroke-width: 1.5px;
 }

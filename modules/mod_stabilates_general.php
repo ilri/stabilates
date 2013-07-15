@@ -133,6 +133,11 @@ class Stabilates extends DBase {
          $Ticks = new TickMaterials($this->Dbase);
          $Ticks->TrafficController();
       }
+      elseif(OPTIONS_REQUESTED_MODULE == 'cellines'){
+         require_once 'mod_cellines.php';
+         $Ticks = new Cellines($this->Dbase);
+         $Ticks->TrafficController();
+      }
       elseif(OPTIONS_REQUESTED_MODULE == 'users'){
          require_once 'mod_users.php';
          $Users = new Users($this->Dbase);
@@ -328,6 +333,7 @@ class Stabilates extends DBase {
       <li><a href='?page=stabilates&do=yellow_form'>Stabilates Yellow Form</a></li>
       <li><a href='?page=cultures&do=browse'>Cultures</a></li>
       <li><a href='?page=tick_materials&do=browse'>Tick Materials</a></li>
+      <li><a href='?page=cellines&do=browse'>Cell Lines</a></li>
       <?php
          echo $this->ChangeCredentialsLink();
        ?>
