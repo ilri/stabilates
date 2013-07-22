@@ -74,15 +74,15 @@ class TickMaterials extends Dbase{
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="parasite">Parasite</label>
+                        <label class="control-label" for="parasiteId">Parasite</label>
                         <div class="controls">
-                            <input type="text" id="parasite" placeholder="Parasite" class='input-small'>
+                            <input type="text" id="parasiteId" placeholder="Parasite" class='input-small'>
                         </div>
                     </div>
                     <div class="control-group">
                         <label class="control-label" for="frozenMaterialId">Material Frozen</label>
                         <div class="controls">
-                            <input type="text" id="material_frozen" placeholder="Material Frozen" class='input-medium' />
+                            <input type="text" id="frozenMaterialId" placeholder="Material Frozen" class='input-medium' />
                         </div>
                     </div>
                     <div class="control-group">
@@ -230,6 +230,8 @@ class TickMaterials extends Dbase{
                 });
                 $('[type=button]').live('click', TickMaterial.buttonClicked);
                 $('[type=select]').live('change', TickMaterial.changedSelection);
+                
+                Main.tickMaterialValidation = <?php echo json_encode(Config::$tickMaterialValidation); ?>;
             });
         </script>
         <?php
@@ -237,16 +239,16 @@ class TickMaterials extends Dbase{
 //        echo "<link rel='stylesheet' type='text/css' href='" . OPTIONS_COMMON_FOLDER_PATH . "jquery/jquery.autocomplete/styles.css' />";
 
         $ac = array(
-            array('sub_module' => 'store_number', 'id' => 'stabilateNo'),
-            array('sub_module' => 'animal_id', 'id' => 'parasiteId'),
+            array('sub_module' => 'stabilate_no', 'id' => 'stabilateNo'),
+            array('sub_module' => 'parasite_Id', 'id' => 'parasiteId'),
             array('sub_module' => 'growth_medium', 'id' => 'growthMedium'),
             array('sub_module' => 'storage_medium', 'id' => 'storageMedium')
         );
 
         echo "<script type='text/javascript'>";
         foreach ($ac as $t) {
-            $settings = array('inputId' => $t['id'], 'reqModule' => 'cultures', 'reqSubModule' => $t['sub_module']);
-            if ($t['id'] == 'storeNo')
+            $settings = array('inputId' => $t['id'], 'reqModule' => 'tick_materials', 'reqSubModule' => $t['sub_module']);
+            if ($t['id'] == 'stabilateNo')
                 $settings['selectFunction'] = 'TickMaterial.fillStabilateData';
             $this->InitiateAutoComplete($settings);
         }
