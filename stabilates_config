@@ -388,8 +388,20 @@ class Config {
             'valueRegex' => '^[0-9]{2}\-[0-9]{2}\-[0-9]{4}$',
             'mandatory' => true, 'defaultVal' => array('1900-01-01', '1960-01-01')
         ),array(
-            'id' => 'cellineFrozenId',
-            'emptyMessage' => 'Please enter the cell line details for this celline.',
+            'id' => 'animalNo',
+            'emptyMessage' => 'Please enter the animal number for this celline.',
+            'wrongValMessage' => '',
+            'valueRegex' => '.+',
+            'mandatory' => true, 'defaultVal' => array('')
+        ),array(
+            'id' => 'parasiteName',
+            'emptyMessage' => 'Please enter the parasite name for this celline.',
+            'wrongValMessage' => '',
+            'valueRegex' => '.+',
+            'mandatory' => true, 'defaultVal' => array('')
+        ),array(
+            'id' => 'cloneNo',
+            'emptyMessage' => 'Please enter the clone number for this celline.',
             'wrongValMessage' => '',
             'valueRegex' => '.+',
             'mandatory' => true, 'defaultVal' => array('')
@@ -407,7 +419,7 @@ class Config {
             'mandatory' => true, 'defaultVal' => array('')
         ), array(
             'id' => 'frozenById',
-            'emptyMessage' => 'Please enter fill in the person who froze this celline.',
+            'emptyMessage' => 'Please fill in the person who froze this celline.',
             'wrongValMessage' => '',
             'valueRegex' => '.+',
             'mandatory' => true, 'defaultVal' => array('')
@@ -429,6 +441,43 @@ class Config {
             'wrongValMessage' => '',
             'valueRegex' => '.+',
             'mandatory' => false, 'defaultVal' => array('')
+        )
+    );
+    /**
+     * An array with the validation criteria for the cell lines storage locations
+     * @var array
+     */
+    static public $traysValidation = array(
+        array(
+            'id' => 'trayId',
+            'emptyMessage' => 'Please enter the trayId for this celline.',
+            'wrongValMessage' => 'Please enter a valid trayId for this celline.',
+            'valueRegex' => '.+',
+            'mandatory' => true, 'defaultVal' => array('')
+        ),array(
+            'id' => 'tankId',
+            'emptyMessage' => 'Please enter the tank id for this celline.',
+            'wrongValMessage' => 'Please enter a valid tank id for this celline.',
+            'valueRegex' => '^[1-6]{1}$',
+            'mandatory' => true, 'defaultVal' => array('')
+        ), array(
+            'id' => 'sectorId',
+            'emptyMessage' => 'Please enter the sector id for this celline.',
+            'wrongValMessage' => 'Please enter a valid sector id for this celline.',
+            'valueRegex' => '^[A-F]{1}$',
+            'mandatory' => true, 'defaultVal' => array('')
+        ), array(
+            'id' => 'towerId',
+            'emptyMessage' => 'Please enter the tower id for this celline.',
+            'wrongValMessage' => 'Please enter a valid tower id for this celline.',
+            'valueRegex' => '.+',
+            'mandatory' => true, 'defaultVal' => array('')
+        ), array(
+            'id' => 'positionTowerId',
+            'emptyMessage' => 'Please enter the position in the Tower for this celline.',
+            'wrongValMessage' => 'Please enter a valid position in the Tower for this celline.',
+            'valueRegex' => '.+',
+            'mandatory' => true, 'defaultVal' => array('')
         )
     );
 
@@ -612,17 +661,34 @@ class Config {
      * A lookup array matching the form values with the respective db fields
      * @var type
      */
-    static public $form_db_map2 = array(
+    static public $form_db_map_cell_lines = array(
         'freezingDateId' => 'cell_lines.freezingDateId',
-        'cellineFrozenId'=> 'cell_lines.cellineFrozenId',
+        'animalNo'=> 'cell_lines.animalNo',
+        'parasiteName'=> 'cell_lines.parasiteName',
+        'cloneNo'=> 'cell_lines.cloneNo',
         'freezingMethodId' => 'cell_lines.freezingMethodId',
         'noVailsFrozenId' => 'cell_lines.noVailsFrozenId',
         'frozenById' => 'cell_lines.frozenById',
         'trayId' => 'cell_lines.trayId' ,
         'positionTrayId' => 'cell_lines.positionTrayId',
-        'cellineComments'=> 'cell_lines.cellineComments'
+        'cellineComments'=> 'cell_lines.cellineComments',
+        'trayId'=>'cell_lines.trayId',
+        'tankNo'=>'tray_details.tankNo',
+        'sectorId'=>'tray_details.sectorId',
+        'towerId'=>'tray_details.towerId',
+        'positionTowerId'=>'tray_details.positionTowerId'
     );
-
+    
+    /**
+     * A lookup array matching the form values with the respective db fields
+     * @var type
+     */
+    static public $form_db_map_trays = array(
+        'trayId'=>'tray_details.trayId',
+        'tankId'=>'tray_details.tankId',
+        'sectorId'=>'tray_details.sectorId',
+        'towerId'=>'tray_details.towerId',
+        'positionTowerId'=>'tray_details.positionTowerId'
+    );
 }
-
 ?>

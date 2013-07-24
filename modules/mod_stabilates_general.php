@@ -135,8 +135,13 @@ class Stabilates extends DBase {
       }
       elseif(OPTIONS_REQUESTED_MODULE == 'cellines'){
          require_once 'mod_cellines.php';
-         $Ticks = new Cellines($this->Dbase);
-         $Ticks->TrafficController();
+         $Cellines = new Cellines($this->Dbase);
+         $Cellines->TrafficController();
+      }
+      elseif(OPTIONS_REQUESTED_MODULE == 'trays_storage'){
+         require_once 'mod_trays_storage.php';
+         $TraysStorage = new TraysStorage($this->Dbase);
+         $TraysStorage->TrafficController();
       }
       elseif(OPTIONS_REQUESTED_MODULE == 'users'){
          require_once 'mod_users.php';
@@ -334,6 +339,8 @@ class Stabilates extends DBase {
       <li><a href='?page=cultures&do=browse'>Cultures</a></li>
       <li><a href='?page=tick_materials&do=browse'>Tick Materials</a></li>
       <li><a href='?page=cellines&do=browse'>Cell Lines</a></li>
+      <li><a href='?page=cellines&do=list'>List Saved Cell Lines</a></li>
+      <li><a href='?page=trays_storage&do=browse'>Tray Locations</a></li>
       <?php
          echo $this->ChangeCredentialsLink();
        ?>

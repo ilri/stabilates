@@ -101,28 +101,33 @@ class Cellines extends Dbase {
                             <div id='freezingDateId'>&nbsp;</div>
                         </div>
                     </div>
-                    <div class="control-group">
-                        <label class="control-label" for="cellineFrozenId">Cell Line Id</label>
-                        <div class="controls">
-                            <input type="text" id="cellineFrozenId" placeholder="Cell Line Id" class='input-medium' />&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
-                        </div>
-                    </div>
-                    <!-- 
                     
-                    <div class="control-group">
+                    <!--div class="control-group">
                         <label class="control-label" for="cellineFrozenId">Cell Line Id</label>
                         <div class="controls">
                             <input type="text" id="cellineFrozenId" placeholder="Cell Line Id" class='input-medium' />&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
                         </div>
-                    </div>
+                    </div-->
+                     
                     <div class="control-group">
-                        <label class="control-label" for="cellineFrozenId">Cell Line Id</label>
+                        <label class="control-label" for="animalNo">Animal No</label>
                         <div class="controls">
-                            <input type="text" id="cellineFrozenId" placeholder="Cell Line Id" class='input-medium' />&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
+                            <input type="text" id="animalNo" placeholder="Animal No" class='input-small' />&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
                         </div>
                     </div>
-       
-                    -->
+                    <div class="control-group">
+                        <label class="control-label" for="parasiteName">Parasite Name</label>
+                        <div class="controls">
+                            <input type="text" id="parasiteName" placeholder="Parasite Name" class='input-small' />&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="cloneNo">Clone No</label>
+                        <div class="controls">
+                            <input type="text" id="cloneNo" placeholder="Clone No" class='input-small' />
+                        </div>
+                    </div>
+                    
                     <div class="control-group">
                         <label class="control-label" for="freezingMethodId">Freezing method</label>
                         <div class="controls" id ="freezingMethodComboLocation">
@@ -189,14 +194,14 @@ class Cellines extends Dbase {
         echo "<link rel='stylesheet' type='text/css' href='" . OPTIONS_COMMON_FOLDER_PATH . "jquery/jquery.autocomplete/styles.css' />";
 
         $ac = array(
-            array('sub_module' => 'frozen_cell_line', 'id' => 'cellineFrozenId'),
+            array('sub_module' => 'frozen_cell_line', 'id' => 'animalNo'),
             array('sub_module' => 'freezing_method_id', 'id' => 'freezingMethodId')
         );
 
         echo "<script type='text/javascript'>";
         foreach ($ac as $t) {
             $settings = array('inputId' => $t['id'], 'reqModule' => 'cellines', 'reqSubModule' => $t['sub_module']);
-            if ($t['id'] == 'cellineFrozenId')
+            if ($t['id'] == 'animalNo')
                 $settings['selectFunction'] = 'Cellines.fillCellineData';
             $this->InitiateAutoComplete($settings);
         }
@@ -236,11 +241,11 @@ class Cellines extends Dbase {
     private function FetchData() {
         if (OPTIONS_REQUESTED_SUB_MODULE == 'frozen_cell_line') {
             $toFetch = array();
-            foreach (Config::$form_db_map2 as $name => $column) {
+            foreach (Config::$form_db_map_cell_lines as $name => $column) {
                 if (preg_match('/^cell_lines\./', $column))
                     $toFetch[] = "$column as $name";
             }
-            $query = 'select id, ' . implode(', ', $toFetch) . ',cellineFrozenId  as val, date_format(freezingDateId, "%d-%m-%Y") as freezingDateId from cell_lines where cellineFrozenId like :query';
+            $query = 'select id, ' . implode(', ', $toFetch) . ',animalNo  as val, date_format(freezingDateId, "%d-%m-%Y") as freezingDateId from cell_lines where animalNo like :query';
         }
         elseif (OPTIONS_REQUESTED_SUB_MODULE == 'freezing_method_id') {
             $query = 'select id, freezingMethodId as val from freezer where freezingMethodId like :query';
@@ -291,10 +296,10 @@ class Cellines extends Dbase {
 
                     //clean bill of health, so build our update/insert query
                     if (!key_exists($selector, $vals)) {     //some values are being picked twice and I cannot understand why! this is going to prevent
-                        $set[] = Config::$form_db_map2[$selector] . "=:$selector";
+                        $set[] = Config::$form_db_map_cell_lines[$selector] . "=:$selector";
                         $vals[$selector] = $cur_val;
                         $insert_vals[] = ":$selector";
-                        $insert_cols[] = Config::$form_db_map2[$selector];
+                        $insert_cols[] = Config::$form_db_map_cell_lines[$selector];
                     }
                 }
             } else {
@@ -437,10 +442,10 @@ class Cellines extends Dbase {
                         $cur_val = date("Y-m-d", strtotime($cur_val));
                     //clean bill of health, so build our update/insert query
                     if (!key_exists($selector, $vals)) {     //some values are being picked twice and I cannot understand why! this is going to prevent
-                        $set[] = Config::$form_db_map2[$selector] . "=:$selector";
+                        $set[] = Config::$form_db_map_cell_lines[$selector] . "=:$selector";
                         $vals[$selector] = $cur_val;
                         $insert_vals[] = ":$selector";
-                        $insert_cols[] = Config::$form_db_map2[$selector];
+                        $insert_cols[] = Config::$form_db_map_cell_lines[$selector];
                     }
                 }
             } else {
