@@ -185,7 +185,7 @@ class Cellines extends Dbase {
                     $('#' + dateInput).jqxDateTimeInput({width: '150px', height: '25px', theme: Main.theme, formatString: "dd-MM-yyyy",
                         minDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1960, 0, 1)),
                         maxDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(2011, 0, 1)),
-                        value: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1960, 0, 1))
+                        value: new $.jqx._jqxDateTimeInput.getDateTime(new Date())
                     });
                 });
                 $('[type=button]').live('click', Cellines.buttonClicked);
