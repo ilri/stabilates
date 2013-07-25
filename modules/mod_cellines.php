@@ -29,14 +29,20 @@ class Cellines extends Dbase {
             echo "<script type='text/javascript'>$('#top_links .back_link').html('<a href=\'?page=home\' id=\'backLink\'>Back</a>');</script>";
             echo "<script type='text/javascript' src='js/cellines.js'></script>";
         }
+        
         if (isset($_GET['query']))
             $this->FetchData();
         elseif (OPTIONS_REQUESTED_ACTION == 'save')
             $this->SaveCelline();
         elseif (OPTIONS_REQUESTED_ACTION == 'delete')
             $this->DeleteCelline();
+        else if (OPTIONS_REQUESTED_ACTION== 'list_cellines')
+            $this->FetchData();
         elseif (OPTIONS_REQUESTED_SUB_MODULE == 'browse')
             $this->BrowseCellinesHome();
+        else if (OPTIONS_REQUESTED_SUB_MODULE == 'list')
+            $this->ListCellines();
+        
     }
 
     /**
@@ -54,7 +60,7 @@ class Cellines extends Dbase {
             $ids = array();
             foreach ($res as $t) {
                 $ids[] = $t['id'];
-                $vals[] = $t['onames'].' '.$t['sname'];
+                $vals[] = $t['onames'] . ' ' . $t['sname'];
             }
             $settings = array('items' => $vals, 'values' => $ids, 'firstValue' => 'Select One', 'name' => 'frozen_by', 'id' => 'frozenById');
             $frozenByCombo = GeneralTasks::PopulateCombo($settings);
@@ -101,14 +107,14 @@ class Cellines extends Dbase {
                             <div id='freezingDateId'>&nbsp;</div>
                         </div>
                     </div>
-                    
+
                     <!--div class="control-group">
                         <label class="control-label" for="cellineFrozenId">Cell Line Id</label>
                         <div class="controls">
                             <input type="text" id="cellineFrozenId" placeholder="Cell Line Id" class='input-medium' />&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
                         </div>
                     </div-->
-                     
+
                     <div class="control-group">
                         <label class="control-label" for="animalNo">Animal No</label>
                         <div class="controls">
@@ -127,7 +133,7 @@ class Cellines extends Dbase {
                             <input type="text" id="cloneNo" placeholder="Clone No" class='input-small' />
                         </div>
                     </div>
-                    
+
                     <div class="control-group">
                         <label class="control-label" for="freezingMethodId">Freezing method</label>
                         <div class="controls" id ="freezingMethodComboLocation">
@@ -247,9 +253,18 @@ class Cellines extends Dbase {
             }
             $query = 'select id, ' . implode(', ', $toFetch) . ',animalNo  as val, date_format(freezingDateId, "%d-%m-%Y") as freezingDateId from cell_lines where animalNo like :query';
         }
+        else if (OPTIONS_REQUESTED_ACTION == 'list_cellines') {      //Fetch the list of all the cell lines that we have entered          
+            $query = 'select stabilates.cell_lines.id, concat(animalNo,parasiteName) as cell_id, animalNo,parasiteName,cloneNo,freezingMethodId,noVailsFrozenId, misc_db.users.sname as frozenById,concat (cell_lines.trayId,":",cell_lines.positionTrayId ) as trayId,freezingDateId,concat(tray_details.tankId,">",tray_details.sectorId,">",tray_details.towerId,">",tray_details.positionTowerId) as bblocation from stabilates.tray_details, stabilates.cell_lines INNER JOIN misc_db.users on ( cell_lines.frozenById = misc_db.users.id) order by stabilates.cell_lines.id';
+            $res = $this->Dbase->ExecuteQuery($query);
+            if ($res == 1)
+                die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+            header("Content-type: application/json");
+            die('{"data":' . json_encode($res) . '}');
+        }
         elseif (OPTIONS_REQUESTED_SUB_MODULE == 'freezing_method_id') {
             $query = 'select id, freezingMethodId as val from freezer where freezingMethodId like :query';
         }
+        
 
         $res = $this->Dbase->ExecuteQuery($query, array('query' => "%{$_GET['query']}%"));
         if ($res == 1)
@@ -325,7 +340,7 @@ class Cellines extends Dbase {
         //start freezeer business
         //check if the method used here already exists in the freezer table. If not, add it.
         $query = "select * from freezer where freezingMethodId = $newMethod or id = $newMethod"; //when do you use id instead of name?
-        
+
         $res = $this->Dbase->ExecuteQuery($query);
         $exists = 0;
         if ($res != 1) {
@@ -368,13 +383,13 @@ class Cellines extends Dbase {
             }
 
             if ($exists == 1) {
-               
+
                 foreach ($res as $t) {
                     $ids_method = $t['id'];
                     $vals_method = $t['freezingMethodId'];
                 }
                 $newMethod = $ids_method; //insert the id instead                
-                $vals['freezingMethodId'] = $newMethod;                
+                $vals['freezingMethodId'] = $newMethod;
             }
         }
         //end freezer business
@@ -501,6 +516,35 @@ class Cellines extends Dbase {
 
         //we are all good
         die(json_encode(array('error' => false, 'data' => 'Data saved well')));
+    }
+
+    /**
+     * Show the cell lines that have been entered
+     */
+    private function ListCellines() {
+        ?>
+        <link rel="stylesheet" href="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/styles/jqx.base.css" type="text/css" />
+        <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxcore.js"></script>
+        <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxcalendar.js"></script>
+        <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxtabs.js"></script>
+
+        <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxgrid.js"></script>
+        <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxgrid.filter.js"></script>
+        <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxdata.js"></script>
+        <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxscrollbar.js"></script>
+        <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxgrid.selection.js"></script>
+        <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxbuttons.js"></script>
+        <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxmenu.js"></script>
+        <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxdropdownlist.js"></script>
+        <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxlistbox.js"></script>
+        <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxcheckbox.js"></script>
+        <div id='list_cell_lines'></div>
+        <script type='text/javascript'>
+            $(document).ready(function() {
+                Cellines.initiateCellinesList();
+            });
+        </script>
+        <?php
     }
 
 }

@@ -126,7 +126,6 @@ class Stabilates extends DBase {
          require_once 'mod_cultures.php';
          $Cultures = new Cultures($this->Dbase);
          $Cultures->TrafficController();
-
       }
       elseif(OPTIONS_REQUESTED_MODULE == 'tick_materials'){
          require_once 'mod_tick_materials.php';
@@ -134,9 +133,9 @@ class Stabilates extends DBase {
          $Ticks->TrafficController();
       }
       elseif(OPTIONS_REQUESTED_MODULE == 'cellines'){
-         require_once 'mod_cellines.php';
-         $Cellines = new Cellines($this->Dbase);
-         $Cellines->TrafficController();
+            require_once 'mod_cellines.php';
+            $Cellines = new Cellines($this->Dbase);
+            $Cellines->TrafficController();
       }
       elseif(OPTIONS_REQUESTED_MODULE == 'trays_storage'){
          require_once 'mod_trays_storage.php';
@@ -1002,6 +1001,7 @@ $(document).ready(function () {
          if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
          header("Content-type: application/json");
          die('{"data":'. json_encode($res) .'}');
+         
       }
       elseif(OPTIONS_REQUESTED_MODULE == 'stabilates' && in_array(OPTIONS_REQUESTED_SUB_MODULE, array('parasite_stats', 'host_stats', 'country_stats'))){
          if(OPTIONS_REQUESTED_SUB_MODULE == 'parasite_stats') $query = 'SELECT parasite_name as s_name, count(*) as count FROM `stabilates` as a inner join parasites as b on a.parasite_id=b.id group by parasite_id';
@@ -1278,8 +1278,10 @@ $(document).ready(function () {
    Stabilates.initiateStabilatesList();
 });
 </script>
+
 <?php
    }
+   
 
    /**
     * Creates some pie charts with the stabilates stats

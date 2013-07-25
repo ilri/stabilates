@@ -205,5 +205,37 @@ var Cellines = {
             Notification.show({create: true, hide: true, updateText: false, text: mssg, error: true});
             return true;
         }
-    }
+    },
+   /**
+    * Initiates the stabilates grid for listing the entered stabilates and their passages and other metadata
+    * @returns {undefined}
+    */
+   initiateCellinesList: function(){
+      var source = {
+         datatype: 'json', datafields: [{name: 'id'}, {name: 'cell_id'}, {name: 'animalNo'}, {name: 'parasiteName'}, {name: 'cloneNo'}, {name: 'freezingDateId'}, {name: 'frozenById'}, {name: 'cloneNo'}, {name: 'trayId'}, {name: 'bblocation'}],
+         id: 'id', root: 'data', async: true, type: 'POST', data: {action: 'list_cellines'}, url: 'mod_ajax.php?page=cellines&do=list'
+      };
+      var stabilatesAdapter = new $.jqx.dataAdapter(source);
+      $("#list_cell_lines").jqxGrid({
+         width: 1000,
+         height: 510,
+         source: stabilatesAdapter,
+         showfilterrow: true,
+         filterable: true,
+         theme: Main.theme,
+         rowdetails: false,
+         rowsheight: 20,
+         columns: [
+            {text: 'Id', datafield: 'id', width: 10, hidden: true},
+            {text: 'Cell Id', datafield: 'cell_id', width: 100},
+            {text: 'Animal Id', datafield: 'animalNo', width: 100},
+            {text: 'Parasite Name', datafield: 'parasiteName', filtertype: 'checkedlist', width: 110},
+            {text: 'Clone', datafield: 'cloneNo', filtertype: 'checkedlist', width: 120},
+            {text: 'Date frozen', datafield: 'freezingDateId', filtertype: 'checkedlist', width: 160},
+            {text: 'Frozen By', datafield: 'frozenById', width: 120},
+            {text: 'Location', datafield: 'trayId', width: 90},
+            {text: 'BioBank Location', datafield: 'bblocation', width: 200}
+         ]
+      });
+   }
 };
