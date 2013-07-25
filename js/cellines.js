@@ -227,14 +227,14 @@ var Cellines = {
          rowsheight: 20,
          columns: [
             {text: 'Id', datafield: 'id', width: 10, hidden: true},
-            {text: 'Cell Id', datafield: 'cell_id', width: 100},
+            {text: 'Cell Id', datafield: 'cell_id', width: 150},
             {text: 'Animal Id', datafield: 'animalNo', width: 100},
             {text: 'Parasite Name', datafield: 'parasiteName', filtertype: 'checkedlist', width: 110},
             {text: 'Clone', datafield: 'cloneNo', filtertype: 'checkedlist', width: 120},
             {text: 'Date frozen', datafield: 'freezingDateId', filtertype: 'checkedlist', width: 160},
             {text: 'Frozen By', datafield: 'frozenById', width: 120},
             {text: 'Location', datafield: 'trayId', width: 90},
-            {text: 'BioBank Location', datafield: 'bblocation', width: 200}
+            {text: 'BioBank Location', datafield: 'bblocation', width: 150}
          ]
       });
    }

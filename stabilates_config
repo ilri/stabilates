@@ -383,10 +383,10 @@ class Config {
     static public $cellinesValidation = array(
         array(
             'name' => 'freezingDateId',
-            'emptyMessage' => '',
+            'emptyMessage' => 'Please enter the date',
             'wrongValMessage' => 'Please enter a valid storage date.',
             'valueRegex' => '^[0-9]{2}\-[0-9]{2}\-[0-9]{4}$',
-            'mandatory' => true, 'defaultVal' => array('1900-01-01', '1960-01-01')
+            'mandatory' => true, 'defaultVal' => array('')
         ),array(
             'id' => 'animalNo',
             'emptyMessage' => 'Please enter the animal number for this celline.',

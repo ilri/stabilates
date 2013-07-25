@@ -155,13 +155,13 @@ class Cellines extends Dbase {
                     <div class="control-group">
                         <label class="control-label" for="trayId">Tray Id</label>
                         <div class="controls">
-                            <input type="text" id="trayId" placeholder="Tray Id" class='input-mini'  />&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
+                            <input type="text" id="trayId" placeholder="Tray Id" class='input-medium'  />&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
                         </div>
                     </div>
                     <div class="control-group">
                         <label class="control-label" for="positionTrayId">Position in Tray</label>
                         <div class="controls">
-                            <input type="text" id="positionTrayId" placeholder="Position in Tray" class='input-medium'  />&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
+                            <input type="text" id="positionTrayId" placeholder="Position in Tray" class='input-mini'  />&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
                         </div>
                     </div>
                     <div class="control-group">
@@ -183,8 +183,8 @@ class Cellines extends Dbase {
                 var date_inputs = ['freezingDateId'];
                 $.each(date_inputs, function(i, dateInput) {
                     $('#' + dateInput).jqxDateTimeInput({width: '150px', height: '25px', theme: Main.theme, formatString: "dd-MM-yyyy",
-                        minDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(1960, 0, 1)),
-                        maxDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(2011, 0, 1)),
+                        minDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date()),
+                        maxDate: new $.jqx._jqxDateTimeInput.getDateTime(new Date(2090, 0, 1)),
                         value: new $.jqx._jqxDateTimeInput.getDateTime(new Date())
                     });
                 });
@@ -254,7 +254,7 @@ class Cellines extends Dbase {
             $query = 'select id, ' . implode(', ', $toFetch) . ',animalNo  as val, date_format(freezingDateId, "%d-%m-%Y") as freezingDateId from cell_lines where animalNo like :query';
         }
         else if (OPTIONS_REQUESTED_ACTION == 'list_cellines') {      //Fetch the list of all the cell lines that we have entered          
-            $query = 'select stabilates.cell_lines.id, concat(animalNo,parasiteName) as cell_id, animalNo,parasiteName,cloneNo,freezingMethodId,noVailsFrozenId, misc_db.users.sname as frozenById,concat (cell_lines.trayId,":",cell_lines.positionTrayId ) as trayId,freezingDateId,concat(tray_details.tankId,">",tray_details.sectorId,">",tray_details.towerId,">",tray_details.positionTowerId) as bblocation from stabilates.tray_details, stabilates.cell_lines INNER JOIN misc_db.users on ( cell_lines.frozenById = misc_db.users.id) order by stabilates.cell_lines.id';
+            $query = 'select concat (animalNo,"/",parasiteName) as cell_id,animalNo,parasiteName,cloneNo,freezingDateId, concat(misc_db.users.sname," ",misc_db.users.onames) as frozenById,concat (cell_lines.trayId,":",cell_lines.positionTrayId ) as trayId,concat(tray_details.tankId,">",tray_details.sectorId,">",tray_details.towerId,">",tray_details.positionTowerId) as bblocation from cell_lines,tray_details,misc_db.users where cell_lines.frozenById = misc_db.users.id and cell_lines.trayId  = tray_details.trayId';
             $res = $this->Dbase->ExecuteQuery($query);
             if ($res == 1)
                 die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
