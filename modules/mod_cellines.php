@@ -254,7 +254,7 @@ class Cellines extends Dbase {
             $query = 'select id, ' . implode(', ', $toFetch) . ',animalNo  as val, date_format(freezingDateId, "%d-%m-%Y") as freezingDateId from cell_lines where animalNo like :query';
         }
         else if (OPTIONS_REQUESTED_ACTION == 'list_cellines') {      //Fetch the list of all the cell lines that we have entered          
-            $query = 'select concat (animalNo,"/",parasiteName) as cell_id,animalNo,parasiteName,cloneNo,freezingDateId, concat(misc_db.users.sname," ",misc_db.users.onames) as frozenById,concat (cell_lines.trayId,":",cell_lines.positionTrayId ) as trayId,concat(tray_details.tankId,">",tray_details.sectorId,">",tray_details.towerId,">",tray_details.positionTowerId) as bblocation from cell_lines,tray_details,misc_db.users where cell_lines.frozenById = misc_db.users.id and cell_lines.trayId  = tray_details.trayId';
+            $query = 'select concat (animalNo,"/",parasiteName) as cell_id,animalNo,parasiteName,cloneNo,freezingDateId, concat(misc_db.users.onames," ",misc_db.users.sname) as frozenById,concat (cell_lines.trayId,":",cell_lines.positionTrayId ) as trayId,concat(tray_details.tankId,">",tray_details.sectorId,">",tray_details.towerId,">",tray_details.positionTowerId) as bblocation from cell_lines,tray_details,misc_db.users where cell_lines.frozenById = misc_db.users.id and cell_lines.trayId  = tray_details.trayId';
             $res = $this->Dbase->ExecuteQuery($query);
             if ($res == 1)
                 die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
