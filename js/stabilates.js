@@ -63,7 +63,8 @@ var Stabilates = {
                if(!data.error){
                   //lets clear all the fields
                   Stabilates.clearPassagesData();
-                  Stabilates.colorInputWithData();
+                  Stabilates.colorInputWithData(Main.stabilatesValidation);
+                  Stabilates.colorInputWithData(Main.passagesValidation);
                }
                $('#inoculumTypeId').focus();
             }
@@ -100,7 +101,8 @@ var Stabilates = {
        $('#footer_links').html('<button type="button" class="btn btn-medium btn-primary stabilate_save" value="save">Save Stabilate</button>\n\
    <button type="button" class="btn btn-medium btn-primary stabilate_cancel">Cancel</button>');
        $("#synonym_list").jqxListBox({ source: [] });
-       Stabilates.colorInputWithData();
+       Stabilates.colorInputWithData(Main.stabilatesValidation);
+       Stabilates.colorInputWithData(Main.passagesValidation);
     },
 
     /**
@@ -114,8 +116,8 @@ var Stabilates = {
 
        $.each(validates, function(i, data){
           //get the value that we want to validate against!
-          if(data.id !== undefined) value = $('#'+ data.id).val();
-          else if(data.name !== undefined) value = $('[name='+ data.name +']').val();
+          if(data.id !== undefined) value = $.trim($('#'+ data.id).val());
+          else if(data.name !== undefined) value = $.trim($('[name='+ data.name +']').val().trim());
 
           //check whether it needs to have something and it has something
           if(data.mandatory && $.inArray(value, data.defaultVal) === 0){
@@ -298,16 +300,8 @@ var Stabilates = {
       return value.replace(new RegExp(pattern, 'gi'), '<strong>$1<\/strong>');
    },
 
-   colorInputWithData: function(){
-      $.each(Main.passagesValidation, function(i, data){
-         var object, val;
-         if(data.id !== undefined) object = $('#'+ data.id);
-         else if(data.name !== undefined) object = $('[name='+ data.name +']');
-         val = object.val();
-         if($.inArray(val, data.defaultVal) !== 0) object.css({color: '#300CD7'});
-         else if($.inArray(val, data.defaultVal) === 0) object.css({color: '#D70C19'});
-      });
-      $.each(Main.stabilatesValidation, function(i, data){
+   colorInputWithData: function(data){
+      $.each(data, function(i, data){
          var object, val;
          if(data.id !== undefined) object = $('#'+ data.id);
          else if(data.name !== undefined) object = $('[name='+ data.name +']');
@@ -364,9 +358,7 @@ var Stabilates = {
       if(Stabilates.validateInput(Main.stabilatesValidation) === true){ return; }
       //if we have a passage number entered, make sure that we have all the data for that passage
       //so simulate the clicking of a passage save button
-      if($('#passageNo').val() !== ''){
-         $('.passage_save').click();
-      }
+      if($('#passageNo').val() !== ''){ $('.passage_save').click(); }
 
       //seems all is well, lets add the stabilate data
       $.each(Main.stabilatesValidation, function(i, data){
@@ -392,7 +384,8 @@ var Stabilates = {
             if(!data.error){
                Stabilates.clearStabilatesData();
                Stabilates.clearPassagesData();
-               Stabilates.colorInputWithData();
+               Stabilates.colorInputWithData(Main.stabilatesValidation);
+               Stabilates.colorInputWithData(Main.passagesValidation);
                Main.curStabilate = { passages: [], synonyms: [] };
             }
             $('#stabilateNo').focus();
@@ -444,7 +437,8 @@ var Stabilates = {
       $('#passage_actions').html('<li><button class="btn btn-medium btn-primary passage_save" type="button">Update Passage</button></li>\n\
       <li><button class="btn btn-medium btn-primary passage_cancel" type="button">Cancel</button></li>');
       Main.curPassageId = data.uid;
-      Stabilates.colorInputWithData();
+      Stabilates.colorInputWithData(Main.stabilatesValidation);
+      Stabilates.colorInputWithData(Main.passagesValidation);
 
       $('#passageNo').val(data.passage_no).focus();
       $('#passages_tab').jqxTabs('select', 0);
@@ -645,20 +639,6 @@ var Stabilates = {
 
             startVis(data.data);
             return;
-
-            var levels = {}, levelCount = 0, align_class, curLevel;
-            $.each(data.data, function(i, item){
-               //get the level with the most nodes
-               if(levels[item.level] === undefined) levels[item.level] = 0;
-               levels[item.level] += 1;
-            });
-
-            //now start placing the items in the right places
-            var parentage = [];
-               $.each(data.data, function(j, item){
-                     parentage[parentage.length] = {name: item.stab_no, children: [], id: item.stab_id, parent: item.parent_id};
-               });
-
          }
       });
    }
