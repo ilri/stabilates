@@ -367,6 +367,7 @@ class Stabilates extends DBase {
       <li><a href='?page=stabilates&do=stats'>Stabilates Statistics</a></li>
       <li><a href='?page=stabilates&do=list'>List Saved Stabilates</a></li>
       <li><a href='?page=cultures&do=browse'>Cultures</a></li>
+      <li><a href='?page=tick_materials&do=browse'>Tick Materials</a></li>
       <?php
          echo $this->ChangeCredentialsLink();
        ?>
