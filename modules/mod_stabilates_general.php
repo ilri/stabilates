@@ -1150,6 +1150,7 @@ $(document).ready(function () {
       }
 
       //check the reference stabilate
+      if(!isset($dt['parentStabilateId']) || $dt['parentStabilateId'] == '') die(json_encode(array('error' => true, 'data' => 'Error! Please enter the parent stabilate for this passage.')));
       $query = 'select id, stab_no from stabilates where id=:id';
       $res = $this->Dbase->ExecuteQuery($query, array('id' => $dt['parentStabilateId']));
       if($res == 1){

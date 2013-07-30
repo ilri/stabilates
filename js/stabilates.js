@@ -281,7 +281,7 @@ var Stabilates = {
        $.each(synonyms, function(){ source[source.length] = this.name; });
        $("#synonym_list").jqxListBox({ source: source });
 
-       Stabilates.colorInputWithData();
+       Stabilates.colorInputWithData(Main.stabilatesValidation);
        Main.curStabilateId = data.id;
        //for editing stabilates
        Main.curStabilate = {synonyms: synonyms};
