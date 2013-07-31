@@ -603,8 +603,8 @@ var Stabilates = {
                   content = "<div class='stabilate'>"+ item.starting_stabilate +'</div>';
                }
                else{
-                  content = "<div class='stabilate'>"+ item.parent_stab +'</div>';
-                  content += "<div class='passages'><img src='images/down_arrow.png' />"+ item.count +' Passage(s)</div>';
+                  content = "<div class='stabilate'>"+ item.stab_no +'</div>';
+                  content += "<div class='passages'><img src='images/down_arrow.png' />"+ item.passage_count +' Passage(s)</div>';
                }
                all = content + all;
             });

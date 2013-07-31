@@ -1002,7 +1002,7 @@ $(document).ready(function () {
          if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
          header("Content-type: application/json");
          die('{"data":'. json_encode($res) .'}');
-         
+
       }
       elseif(OPTIONS_REQUESTED_MODULE == 'stabilates' && in_array(OPTIONS_REQUESTED_SUB_MODULE, array('parasite_stats', 'host_stats', 'country_stats'))){
          if(OPTIONS_REQUESTED_SUB_MODULE == 'parasite_stats') $query = 'SELECT parasite_name as s_name, count(*) as count FROM `stabilates` as a inner join parasites as b on a.parasite_id=b.id group by parasite_id';
@@ -1283,7 +1283,7 @@ $(document).ready(function () {
 
 <?php
    }
-   
+
 
    /**
     * Creates some pie charts with the stabilates stats
@@ -1406,21 +1406,33 @@ $(document).ready(function () {
          $passes = $this->StabilateParent($stabilateId);
          if(!$passes || count($passes) == 0) break;
          else{
-            //get the stabilate id of the parent
+            //get the stabilate id of the parent(i.e. the returned stabilate)... we assume that this stabilate is in the db
             $query = 'select id from stabilates where stab_no = :stab';
             $res = $this->Dbase->ExecuteQuery($query, array('stab' => $passes['parent_stab']));
             if($res == 1) die('Error');
-            $stabilateId = $res[0]['id'];
-
-            //add it to the history
-            $passes['parent_id'] = $stabilateId;
-            $history[] = $passes;
+            if(count($res) == 1){
+               $history[] = array('stab_no' => $passes['parent_stab'], 'passage_count' => $passes['count'], 'stab_id' => $res[0]['id'], 'parent_stab_id' => $stabilateId);
+               //now the current stabilate becomes the child... we now continue to look for its parent!
+               $stabilateId = $res[0]['id'];
+            }
+            else if(count($res) > 1) $this->Dbase->CreateLogEntry("Error! We have multiple instances of the stabilate '{$passes['parent_stab']}'.", 'fatal');
+            else if(count($res) == 0){
+               $history[] = array('stab_no' => $passes['parent_stab'], 'passage_count' => $passes['count'], 'stab_id' => NULL, 'parent_stab_id' => $stabilateId);
+               $this->Dbase->CreateLogEntry("The stabilate '{$passes['parent_stab']}' is not appearing in the list of stabilates, yet it is referenced as a parent stabilate in the passages table.", 'fatal');
+            }
+            if(count($res) > 1 || count($res) == 0) break;     //if we encounter an error or an unfavourable situation... break
          }
       }
       if($die) die(json_encode(array('error' => false, 'data' => $history)));
       else return $history;
    }
 
+   /**
+    * Gets the parent stabilate of the current stabilate
+    *
+    * @param   integer  $stabilateId   The id of the current, of which we are interested in the parent stabilate
+    * @return  array    Returns an array with the parent stabilate name and the number of passages for this stabilate
+    */
    private function StabilateParent($stabilateId){
       $query = 'select passage_no, inoculum_ref from passages where stabilate_ref = :stab_id order by passage_no';
       $res = $this->Dbase->ExecuteQuery($query, array('stab_id' => $stabilateId));
@@ -1455,27 +1467,42 @@ $(document).ready(function () {
 
       //get the brief history of the stabilate to the earliest grand dad
       $history = $this->StabilateHistory(false);
+//      echo '<pre>'. print_r($history, true) .'</pre>';
 
       //get the first of all stabilates..... mwanzilishi
       end($history);
       $origin = current($history);   //the first of all stabilates..... mwanzilishi
 
       $moreChildren = true;
+      $level = 0;
       if(count($history) == 1) $this->parentage[$origin['start_id']] = array('stab_id' => $origin['start_id'], 'name' => $origin['starting_stabilate'], 'level' => 0, 'parent_id' => NULL);
-      else $this->parentage[$origin['parent_id']] = array('stab_id' => $origin['parent_id'], 'name' => $origin['parent_stab'], 'level' => 0, 'parent_id' => NULL);
+      else{
+         if($origin[0]['id'] == NULL){
+            //the first stabilate does not appear in our list of stabilates.... so add it with a special id...
+            $this->parentage['1_1'] = array('stab_id' => '1_1', 'name' => $origin['stab_no'], 'level' => 0, 'parent_id' => NULL);
+            //add the previous stabilate, which will act as our starting stabilate! We assume that this stabilate has only 1 children
+            $prev = prev($history);
+            if(isset($prev['starting_stabilate'])) $this->parentage[$prev['start_id']] = array('stab_id' => $prev['start_id'], 'name' => $prev['starting_stabilate'], 'level' => 1, 'parent_id' => '1_1', 'parent' => $origin['stab_no']);
+            else $this->parentage[$prev['stab_id']] = array('stab_id' => $prev['stab_id'], 'name' => $prev['stab_no'], 'level' => 1, 'parent_id' => '1_1', 'parent' => $origin['stab_no']);
+            $level = 1;
+         }
+         else $this->parentage[$origin['stab_id']] = array('stab_id' => $origin['stab_id'], 'name' => $origin['stab_no'], 'level' => 0, 'parent_id' => NULL);
+      }
 
       //now get the children of this stabilate
-      $level = 0;
       while($moreChildren){
          $moreChildren = false;     //just allow the execution to reach here....
          foreach($this->parentage as $node){
             if($node['level'] == $level){ //we are in the right place to look for the grand children
-               $more = $this->StabilateChildren($node['stab_id'], $level+1);
+               if($node['stab_id'] != '') $more = $this->StabilateChildren($node['stab_id'], $level+1);
+               else $this->Dbase->CreateLogEntry("The node {$node['name']} has an invalid id!\n\n". print_r($node, true), 'fatal');
                if($moreChildren == false && $more == true) $moreChildren = true;    //if we find children even in one instance... we are in for another round
             }
          }
          $level++;
       }
+//      echo '<pre>'. print_r($this->parentage, true) .'</pre>';
+//      die();
 
       //lets group the nodes in terms of parent->children
       for( ;$level > -1; $level--){
@@ -1536,6 +1563,7 @@ $(document).ready(function () {
       elseif(count($res) == 0){
          echo '<pre>'. print_r($this->parentage, true) .'</pre>';
          echo "$query, $stabilateId";
+         return false;
       }
       $stab_no = $res[0]['stab_no'];
 
