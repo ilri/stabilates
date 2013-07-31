@@ -93,7 +93,7 @@ class TickMaterials extends Dbase{
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="parasite">Parasite</label>
+                        <label class="control-label" for="parasiteId">Parasite</label>
                         <div class="controls">
                             <input type="text" id="parasite" placeholder="Parasite" class='input-large'>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
                         </div>
