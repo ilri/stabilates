@@ -291,7 +291,7 @@ class TickMaterials extends Dbase{
         //bind the search to autocomplete
         $(function(){
         var <?php echo $settings['inputId']; ?>_settings = {
-        serviceUrl:'mod_ajax.php', minChars:2, maxHeight:400, width:150,
+        serviceUrl:'mod_ajax.php', minChars:2, maxHeight:400, width:250,
         zIndex: 9999, deferRequestBy: 300, //miliseconds
         params: { page: '<?php echo $settings['reqModule']; ?>', 'do': '<?php echo $settings['reqSubModule']; ?>' }, //aditional parameters
         noCache: true, //default is false, set to true to disable caching
@@ -312,6 +312,7 @@ class TickMaterials extends Dbase{
      */
     private function FetchData() {
         if (OPTIONS_REQUESTED_SUB_MODULE == 'stabilate_no') $query = 'select id, stabilate_no as val from tick_stabilates where stabilate_no like :query';
+        elseif (OPTIONS_REQUESTED_SUB_MODULE == 'parasite') $query = 'select id, parasite_name as val from tick_parasites where parasite_name like :query';
         elseif (OPTIONS_REQUESTED_SUB_MODULE == 'stabilate_metadata'){
             $query = 'select a.*, b.parasite_name, c.id as frozenMaterialId
                from tick_stabilates as a inner join tick_parasites as b on a.parasite_id = b.id inner join tick_frozen_material as c on a.frozen_material_id=c.id
@@ -374,11 +375,23 @@ class TickMaterials extends Dbase{
 //            echo "{$cur['id']}; {$cur['name']} ==> $cur_val</br>";
             }
         }
+
+        $lockQuery = "lock table tick_stabilates write, tick_frozen_material write, tick_parasites write";
+        $this->Dbase->StartTrans();
         if (key_exists('parasite', $vals)){
            //get the parasite id of this stabilate
            $query = 'select id from tick_parasites where parasite_name = :parasite';
            $parasiteId = $this->Dbase->ExecuteQuery($query, array('parasite' => $vals['parasite']));
            if($parasiteId == -1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+           if(count($parasiteId) == 0){
+              //this parasite does not exist..... lets add it to the system
+              $query = 'insert into tick_parasites(parasite_name) values(:name)';
+              $parasiteId = $this->Dbase->ExecuteQuery($query, array('name' => $vals['parasite']));
+              if($parasiteId == 0) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+              $query = 'select id from tick_parasites where parasite_name = :parasite';
+              $parasiteId = $this->Dbase->ExecuteQuery($query, array('parasite' => $vals['parasite']));
+              if($parasiteId == -1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+           }
            $vals['parasite'] = $parasiteId[0]['id'];
         }
         if (key_exists('speciesId', $vals)){
@@ -400,8 +413,6 @@ class TickMaterials extends Dbase{
         }
         if (count($errors) != 0) die(json_encode(array('error' => true, 'data' => implode("<br />", $errors))));
 
-        $lockQuery = "lock table tick_stabilates write, tick_frozen_material write";
-        $this->Dbase->StartTrans();
         if (isset($dt['id'])) {
             //we wanna update a stabilate.... lets check how the saved data compares with our data
             $query = 'select * from tick_stabilates where id=:id';
