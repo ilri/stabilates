@@ -73,6 +73,8 @@ var Stabilates = {
        else if(/passage_cancel/.test(this.className)){
           Stabilates.clearPassagesData();
        }
+       else if(/arrow\-/.test(this.className)) Stabilates.addRemoveStabStorageLocations(this.className);
+       else if(/stab_loc_save/.test(this.className)) Stabilates.saveStabStorageLocations();
        else if(/stabilate_save/.test(this.className)){ Stabilates.saveStabilate(); }
        else if(/stabilate_cancel/.test(this.className)){
           Stabilates.clearStabilatesData();
@@ -286,11 +288,98 @@ var Stabilates = {
        //for editing stabilates
        Main.curStabilate = {synonyms: synonyms};
        Main.curStabilate.id = data.id;
-       Stabilates.initiatePassageDetails(data.id);
        //show the passages tab
-       $('#passages_tab').jqxTabs('select', 1);
+       if(Main.selectedTab === undefined){
+          $('#passages_tab').jqxTabs('select', 2);
+          Main.selectedTab = 2;
+       }
+       else Stabilates.initiateStabilateLocations(Main.curStabilateId);
+
        $('#footer_links').html('<button type="button" class="btn btn-medium btn-primary stabilate_save" value="save">Update Stabilate</button>\n\
          <button type="button" class="btn btn-medium btn-primary stabilate_cancel">Cancel</button>');
+    },
+
+    /**
+     * Initiates the locations where the stabilate is saved!!
+     *
+     * @returns {undefined}
+     */
+    initiateStabilateLocations: function(stabilateId){
+      var params = sprintf('stabilate_no=%s&stabilate_id=%s&action=stabilate_locations',$('#stabilateNo').val(), stabilateId), sdata;
+      Notification.show({create:true, hide:false, updateText:false, text:'Fetching the stabilates locations...', error:false});
+      $.ajax({
+         type:"POST", url:'mod_ajax.php?page=stabilates&do=browse', dataType:'json', async: false, data: params,
+         error:function(){
+            Notification.show({create:false, hide:true, updateText:true, text:'There was an error while communicating with the server', error:true});
+            return false;
+         },
+         success: function(data){
+            var mssg;
+            if(data.error) mssg = data.data+ ' Please try again.';
+            else mssg = 'Stabilate data fetched succesfully';
+            Notification.show({create:false, hide:true, updateText:true, text:mssg, error:data.error});
+            sdata = data;
+         }
+      });
+
+       $("#all_locations").jqxListBox({ source: sdata.all, multiple: true, width: 250, height: 200, theme: Main.theme });
+       $("#selected_locations").jqxListBox({ source: sdata.allocated, multiple: true, width: 250, height: 200, theme: Main.theme });
+       $('#selection_arrows').html("<div class='sel_arrow'><span class='arrow-success' data-angle='90'></span></div><div class='sel_arrow'><span class='arrow-danger' data-angle='270'></span></div>");
+       $('.arrow, [class^=arrow-]').bootstrapArrows();
+    },
+
+    /**
+     * Adds or removes the storage locations from the list of locations
+     *
+     * @returns {undefined}
+     */
+    addRemoveStabStorageLocations: function(className){
+       var action, from_div, dest_div, selectedItems;
+       if(className === 'arrow-success'){
+          action = 'add'; from_div = '#all_locations'; dest_div = '#selected_locations';
+       }
+       else{
+          action = 'remove'; dest_div = '#all_locations'; from_div = '#selected_locations';
+       }
+
+       selectedItems = $(from_div).jqxListBox('getSelectedItems');
+       if(selectedItems.length === 0){
+          Notification.show({create:true, hide:true, updateText:false, text:'Please select at least 1 position to add or remove.', error:true});
+          return;
+       }
+
+       //now add or remove the item from the respective box
+       $.each(selectedItems, function(){
+          $(from_div).jqxListBox('removeAt', this.index);
+          $(dest_div).jqxListBox('addItem', this);
+       });
+    },
+
+    /**
+     * Update the stabilate locations
+     *
+     * @returns {undefined}
+     */
+    saveStabStorageLocations: function(){
+       var selectedLocations = $('#selected_locations').jqxListBox('getItems'), locIds = [];
+       if(selectedLocations === 0){
+          Notification.show({create:true, hide:true, updateText:false, text:'Please select at least 1 position where this stabilate is saved.', error:true});
+          return;
+       }
+       $.each(selectedLocations, function(){ locIds[locIds.length] = this.value; });
+
+      var params = sprintf('stabilate_locs=%s&stabilate_id=%s&action=save_stabilate_locations', $.toJSON(locIds), Main.curStabilateId);
+      Notification.show({create:true, hide:false, updateText:false, text:'Saving the stabilates locations...', error:false});
+      $.ajax({
+         type:"POST", url:'mod_ajax.php?page=stabilates&do=browse', dataType:'json', async: false, data: params,
+         error:function(){ Notification.serverCommunicationError(); },
+         success: function(data){
+            var mssg;
+            if(data.error) mssg = data.data+ ' Please try again.';
+            else mssg = 'Stabilate storage locations saved succesfully';
+            Notification.show({create:false, hide:true, updateText:true, text:mssg, error:data.error});
+         }
+      });
     },
 
     initiateAutoComplete: function(){},

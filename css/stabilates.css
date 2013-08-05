@@ -400,3 +400,29 @@ line.link {
     stroke: #9ecae1;
     stroke-width: 1.5px;
 }
+
+#stabilate_locations{
+   text-align: center;
+}
+
+#stabilates #all_locations, #stabilates  #selected_locations{
+   margin: 10px 0px 0px 0px;
+}
+
+#stabilates #selection_arrows{
+   margin: 50px 10px 0px 10px;
+}
+
+#selection_arrows .sel_arrow{
+   cursor: pointer;
+}
+
+#stabilates #stab_loc_actions{
+   margin: 90px 10px 0px 10px;
+   text-align: center;
+}
+
+#stabilates #stab_loc_actions button{
+   margin: 5px;
+   width: 124px;
+}

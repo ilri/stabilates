@@ -109,6 +109,8 @@ class Stabilates extends DBase {
          elseif(OPTIONS_REQUESTED_ACTION == 'save') $this->SaveStabilates();
          elseif(OPTIONS_REQUESTED_ACTION == 'save_passage') $this->SavePassages();
          elseif(OPTIONS_REQUESTED_ACTION == 'list_stabilates') $this->FetchData();
+         elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_locations') $this->FetchData();
+         elseif(OPTIONS_REQUESTED_ACTION == 'save_stabilate_locations') $this->SaveStabilateLocations();
          elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_data') $this->FetchData();
          elseif(OPTIONS_REQUESTED_ACTION == 'yellow_form') $this->CreateStabilatesYellowForm();
          elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_history') $this->StabilateHistory();
@@ -630,6 +632,8 @@ class Stabilates extends DBase {
       }
 ?>
 <link rel="stylesheet" href="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/styles/jqx.base.css" type="text/css" />
+<link rel="stylesheet" href="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>bootstrap/css/bootstrap-arrows.css" type="text/css" />
+
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxcore.js"></script>
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxcalendar.js"></script>
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxtabs.js"></script>
@@ -643,6 +647,8 @@ class Stabilates extends DBase {
 
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/jqxdatetimeinput.js"></script>
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>jquery/jqwidgets/globalization/jquery.global.js"></script>
+
+<script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>bootstrap/js/bootstrap-arrows.min.js"></script>
 
 <script type="text/javascript" src="<?php echo OPTIONS_COMMON_FOLDER_PATH; ?>d3/d3.min.js"></script>
 <script type="text/javascript" src="js/d3.geom.js"></script>
@@ -744,6 +750,7 @@ class Stabilates extends DBase {
  <ul>
    <li style="margin-left: 30px;">Passage Entry</li>
    <li>Saved Passages</li>
+   <li>Stabilate Locations</li>
 </ul>
 <div class='passages'>
    <ul class="entered_passages"></ul>
@@ -811,7 +818,23 @@ class Stabilates extends DBase {
 </div>
 
 <div id="saved_passages">
-   Entered passages
+   Entered Passages
+</div>
+
+<div id="stabilate_locations">
+   <div class="control-group left" style="margin-left: 150px;">
+      <label class="text-center" for="all_locations">All Locations</label>
+      <div class="controls" id="all_locations"></div>
+   </div>
+   <div id="selection_arrows" class="left"></div>
+   <div class="control-group left">
+      <label class="text-center" for="selected_locations">Selected Locations</label>
+      <div class="controls" id="selected_locations"></div>
+   </div>
+   <div class="control-group left" id="stab_loc_actions">
+      <div><button class="btn btn-medium btn-primary stab_loc_save" type="button">Save Locations</button></div>
+      <div><button class="btn btn-medium btn-primary stab_loc_cancel" type="button">Cancel</button></div>
+   </div>
 </div>
 </div>
 
@@ -924,12 +947,11 @@ $(document).ready(function () {
    $('.view_form').click(Stabilates.viewYellowForm);
    $('.view_history').click(Stabilates.viewStabilateHistory);
    $('.view_full_history').click(Stabilates.viewStabilateFullHistory);
+   $('.sel_arrow span').live('click', Stabilates.buttonClicked);
    $('#passages_tab').jqxTabs({ width: '100%', height: 310, position: 'top', theme: Main.theme });
    $('#passages_tab').live('selecting', function (event) {
-      if(event.args.item === 1){
-         //we have selected the passages tab... reload the data
-         Stabilates.initiatePassageDetails(Main.curStabilateId);
-      }
+      if(event.args.item === 1) Stabilates.initiatePassageDetails(Main.curStabilateId);     //we have selected the passages tab... reload the data
+      else if(event.args.item === 2) Stabilates.initiateStabilateLocations(Main.curStabilateId);
    });
    $('#stabilateNo').focus();
    Main.passagesValidation = <?php echo json_encode(Config::$passageValidation); ?>;
@@ -961,6 +983,23 @@ $(document).ready(function () {
          }
          $data = array('error' => false, 'query' => $_GET['query'], 'suggestions' => $suggestions, 'data' => $data);
          die(json_encode($data));
+      }
+      elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_locations' && OPTIONS_REQUESTED_SUB_MODULE == 'browse'){
+         if(!isset($_POST['stabilate_no'])) die('{"data":'. json_encode(array()) .'}');
+         //get the digit component of the stabilate
+         preg_match('/([0-9]{1,4})$/', $_POST['stabilate_no'], $digit_part);
+         $query = 'select id, box_name, position, stabilate_code, concat(box_name, ">", position, ": ", stabilate_code) as label from tryps_stabilate_locations where stabilate_code like :code and stabilate_id is null';
+         $all = $this->Dbase->ExecuteQuery($query, array('code' => "%{$digit_part[1]}%"));
+         if($all == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+//         var_dump($all);
+
+         //get the saved locations
+         $query = 'select id, box_name, position, stabilate_code, concat(box_name, ">", position, ": ", stabilate_code) as label from tryps_stabilate_locations where stabilate_id = :id';
+         $allocated = $this->Dbase->ExecuteQuery($query, array('id' => $_POST['stabilate_id']));
+         if($allocated == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+
+         header("Content-type: application/json");
+         die('{"error":false, "all":'. json_encode($all) .', "allocated": '.json_encode($allocated).'}');
       }
       elseif(OPTIONS_REQUESTED_SUB_MODULE == 'passages' && OPTIONS_REQUESTED_ACTION == 'browse'){
          if(!isset($_POST['stabilate_id'])) die('{"data":'. json_encode(array()) .'}');
@@ -1217,7 +1256,6 @@ $(document).ready(function () {
       }
 
       if(count($errors) != 0 ) die(json_encode(array('error' => true, 'data' => implode("<br />", $errors))));
-
 
       $lockQuery = "lock table passages write";
       $this->Dbase->StartTrans();
@@ -1578,6 +1616,78 @@ $(document).ready(function () {
       }
       if(count($children) != 0) return true;
       else return false;
+   }
+
+   /**
+    * Saves the location of the current stabilates
+    */
+   private function SaveStabilateLocations(){
+      if(!isset($_POST['stabilate_id']) || $_POST['stabilate_id'] == 'undefined') die(json_encode(array('error' => true, 'data' => 'Stop tampering with the system. Big brother is watching!')));
+      $locations = json_decode($_POST['stabilate_locs'], true);
+      if(!is_array($locations)) $locations = array($locations);
+
+      //get all the locations where it is currently stored
+      $query = 'select id from tryps_stabilate_locations where stabilate_id = :id';
+      $savedLocs = $this->Dbase->ExecuteQuery($query, array('id' => $_POST['stabilate_id']));
+      if($savedLocs == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+
+      $lockQuery = "lock table tryps_stabilate_locations write";
+      $this->Dbase->StartTrans();
+      $fetchQuery = 'select id, stabilate_id, stabilate_code from tryps_stabilate_locations where box_name = :box and position = :position';
+      $updateQuery = 'update tryps_stabilate_locations set stabilate_id = :stabilate_id, last_updated_by = :updated_by, update_timestamp = :update_time where id = :id';
+      $addedLocs = array();
+      foreach($locations as $loc){
+         if(is_null($loc)) continue;
+         //get the location where this stabilate is being stored
+         preg_match('/^(.+)>(.+)\:.+/', $loc, $stab_locs);
+         $vals = array('box' => $stab_locs[1], 'position' => $stab_locs[2]);
+         $res = $this->Dbase->ExecuteQuery($fetchQuery, $vals);
+         if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+         if(count($res) == 1){
+            if(is_null($res[0]['stabilate_id'])){
+               //nothing is here... so we can go ahead and save it
+               $vals = array('stabilate_id' => $_POST['stabilate_id'], 'updated_by' => $_SESSION['user_id'], 'update_time' => date('Y-m-d H:i:s'), 'id' => $res[0]['id']);
+               $res = $this->Dbase->ExecuteQuery($updateQuery, $vals);
+               if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+               $addedLocs[] = $res[0]['id'];
+            }
+            elseif($res[0]['stabilate_id'] != $_POST['stabilate_id']){
+               //we have a different stabilate saved here..... wika! This is cumbersome... but it ensures that the over-writing process is well thought out
+               $this->Dbase->RollBackTrans();
+               die(json_encode(array('error' => true, 'data' => "Error! The location '$loc' is currently occupied by '{$res[0]['stabilate_code']}'. Delete it first before saving this stabilate.")));
+            }
+            else{ $addedLocs[] = $res[0]['id']; /*The same stabilate is saved there... no need of updating it*/ }
+         }
+         elseif(count($res) == 0){
+            $this->Dbase->CreateLogEntry("Error! Someone is trying to hack me!!! Current location '$loc'.", 'fatal');
+            $this->Dbase->RollBackTrans();
+            die(json_encode(array('error' => true, 'data' => "Error! Please stop tampering with the data. Big brother is watching.")));
+         }
+         else{
+            //something is just wrong here.... more than 1 stabilate saved in the same location... wika!
+            $count = count($res);
+            foreach($res as $t) $tmp[] = $res['stabilate_code'];
+            $stabs = implode(', ', $tmp);
+            $this->Dbase->CreateLogEntry("Error! The location '$loc' is currently occupied by $count($stabs) stabilates.", 'fatal');
+            $this->Dbase->RollBackTrans();
+            die(json_encode(array('error' => true, 'data' => "Error! The location '$loc' is currently occupied by $count($stabs) stabilates. Please update these locations.")));
+         }
+      }
+      //go ahead and the locations that were saved before
+      foreach($savedLocs as $loc){
+         if(!in_array($loc['id'], $addedLocs)){
+            //delete it
+            $vals = array('stabilate_id' => NULL, 'updated_by' => $_SESSION['user_id'], 'update_time' => date('Y-m-d H:i:s'), 'id' => $loc['id']);
+//            var_dump($vals); die();
+            $res = $this->Dbase->ExecuteQuery($updateQuery, $vals);
+            if($res == 1){
+               $this->Dbase->RollBackTrans();
+               die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+            }
+         }
+      }
+      $this->Dbase->CommitTrans();
+      die(json_encode(array('error' => false, 'data' => 'The stabilates positions have been saved succesfully!')));
    }
 }
 ?>
