@@ -288,12 +288,16 @@ var Stabilates = {
        //for editing stabilates
        Main.curStabilate = {synonyms: synonyms};
        Main.curStabilate.id = data.id;
-       //show the passages tab
-       if(Main.selectedTab === undefined){
-          $('#passages_tab').jqxTabs('select', 2);
-          Main.selectedTab = 2;
+       //show the passages and location tab
+       if($('#passages_tab').jqxTabs('selectedItem') !== 1) $('#passages_tab').jqxTabs('select', 1);
+       else{
+          Stabilates.initiatePassageDetails(Main.curStabilateId);
+          Stabilates.initiateStabilateLocations(Main.curStabilateId);
        }
-       else Stabilates.initiateStabilateLocations(Main.curStabilateId);
+       if(Main.selectedTab === undefined) Main.selectedTab = 1;
+
+       //show the stabilate links
+       $('.stab_links:hidden').toggle('slow');
 
        $('#footer_links').html('<button type="button" class="btn btn-medium btn-primary stabilate_save" value="save">Update Stabilate</button>\n\
          <button type="button" class="btn btn-medium btn-primary stabilate_cancel">Cancel</button>');
@@ -322,9 +326,9 @@ var Stabilates = {
          }
       });
 
-       $("#all_locations").jqxListBox({ source: sdata.all, multiple: true, width: 250, height: 200, theme: Main.theme });
-       $("#selected_locations").jqxListBox({ source: sdata.allocated, multiple: true, width: 250, height: 200, theme: Main.theme });
-       $('#selection_arrows').html("<div class='sel_arrow'><span class='arrow-success' data-angle='90'></span></div><div class='sel_arrow'><span class='arrow-danger' data-angle='270'></span></div>");
+       $("#all_locations").jqxListBox({ source: sdata.all, multiple: true, width: '200px', height: '225px', theme: Main.theme, equalItemsWidth:true });
+       $("#selected_locations").jqxListBox({ source: sdata.allocated, multiple: true, width: '200px', height: '225px', theme: Main.theme, equalItemsWidth:true });
+       $('#selection_arrows').html("<div class='sel_arrow'><span class='arrow-success' data-angle='90' height='36'></span></div><div class='sel_arrow'><span class='arrow-danger' data-angle='270'></span></div>");
        $('.arrow, [class^=arrow-]').bootstrapArrows();
     },
 
@@ -400,39 +404,44 @@ var Stabilates = {
       });
    },
 
+   /**
+    * Inititiates the passage details
+    *
+    * @param {type} stabilateId
+    * @returns {undefined}
+    */
    initiatePassageDetails: function(stabilateId){
       var grid = $($('#saved_passages').children()[0]);
       //initiate the patients results grid
       var url = 'mod_ajax.php?page=stabilates&do=passages';
       var source = {
-         datatype: 'json', datafields: [ {name: 'passage_id'}, {name: 'passage_no'}, {name: 'inoculum_name'}, {name: 'inoculum_ref'}, {name: 'species_name'}, {name: 'idays'}, {name: 'no_infected'}, {name: 'rfreq'}, {name: 'rdate'}, {name: 'comments'}],
+         datatype: 'json', datafields: [ {name: 'passage_id'}, {name: 'passage_no'}, {name: 'inoculum_name'}, {name: 'inoculum_ref'}, {name: 'species_name'}, {name: 'idays'}, {name: 'no_infected'},
+            {name: 'rfreq'}, {name: 'rdate'}, {name: 'comments'}, {name: 'actions'}],
          id: 'id', root: 'data', async: true, type: 'POST', data: {action: 'browse', stabilate_id: stabilateId}, url: url
       };
       var resultsAdapter = new $.jqx.dataAdapter(source);
       if (grid.length === 0) {
          $("#saved_passages").jqxGrid({
-            width: 980,
-            height: 310,
+            width: 520,
+            height: 265,
             source: resultsAdapter,
             theme: Main.theme,
             rowdetails: false,
             rowsheight: 20,
             columns: [
                {text: 'Passage Id', datafield: 'passage_id', width: 10, hidden: true},
-               {text: 'Pass. #', datafield: 'passage_no', width: 70},
-               {text: 'Pass Parent', datafield: 'inoculum_ref', width: 100},
+               {text: '#', datafield: 'passage_no', width: 20},
+               {text: 'Pass Parent', datafield: 'inoculum_ref', width: 85},
                {text: 'Inoculum Type', datafield: 'inoculum_name', width: 100},
-               {text: 'Species', datafield: 'species_name', width: 150},
-               {text: 'Days', datafield: 'idays', width: 60, cellsrenderer:
-                  function(row, column, value){
-                     if(isNaN(value) || value === '') return value;
-                     else return value +' days';
-                  }
-               },
-               {text: '# Infected', datafield: 'no_infected', width: 100},
-               {text: 'Rad. Freq', datafield: 'rfreq', width: 80},
-               {text: 'Rad. Date', datafield: 'rdate', width: 120},
-               {text: 'Comments', datafield: 'comments', width: 200}
+               {text: 'Species', datafield: 'species_name', width: 80},
+               {text: 'Days', datafield: 'idays', width: 50, cellsrenderer: function(row, column, value){ return (isNaN(value) || value === '') ? value : value +' days'; } },
+               {text: '# Infected', datafield: 'no_infected', width: 80},
+               {text: 'Rad. Freq', datafield: 'rfreq', width: 70},
+               {text: 'Rad. Date', datafield: 'rdate', width: 120, hidden: true},
+               {text: 'Comments', datafield: 'comments', width: 200, hidden: true},
+               {text: '...', datafield: 'id', width: 25, cellsrenderer: function(row, column, value){
+                  return sprintf("<img class='delete_pass id_%s' src='images/delete_small.png' />", value);
+               } }
             ]
          });
          $('#saved_passages').on('rowdoubleclick', Stabilates.startPassageEdit);

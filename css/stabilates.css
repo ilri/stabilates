@@ -380,9 +380,20 @@ dl{
     margin-left: 10px;
 }
 
+.stabilates legend{
+   margin-bottom: 2px;
+}
+
 .stab_links{
-    width: 70px;
-    margin-left: 295px;
+    width: 95%;
+    margin: 5px;
+    padding-left: 30px;
+    border-bottom: 0.7px #D5D5D5 dotted;
+    display: none;
+}
+
+.stab_links a{
+   margin: 1px 4px;
 }
 
 .left_align{
@@ -401,16 +412,29 @@ line.link {
     stroke-width: 1.5px;
 }
 
+#saved_passages{
+   width: 525px;
+   float: left;
+}
+
 #stabilate_locations{
    text-align: center;
+   width: 535px;
+   height: 265px;
+   margin-left: 510px;
+}
+
+#stabilate_locations .arrow-success, #stabilate_locations .arrow-danger{
+   height: 36px;
 }
 
 #stabilates #all_locations, #stabilates  #selected_locations{
    margin: 10px 0px 0px 0px;
+   font-size: 0.85em;
 }
 
 #stabilates #selection_arrows{
-   margin: 50px 10px 0px 10px;
+   margin: 100px 5px 0px 10px;
 }
 
 #selection_arrows .sel_arrow{
@@ -418,11 +442,15 @@ line.link {
 }
 
 #stabilates #stab_loc_actions{
-   margin: 90px 10px 0px 10px;
+   margin: 90px 0px 0px 0px;
    text-align: center;
 }
 
 #stabilates #stab_loc_actions button{
    margin: 5px;
-   width: 124px;
+   width: 54px;
+}
+
+.delete_pass{
+   margin: 3px;
 }

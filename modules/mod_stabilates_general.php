@@ -660,13 +660,18 @@ class Stabilates extends DBase {
 <form class='form-horizontal'>
 <fieldset class='stabilates'>
    <legend>Stabilates</legend>
+   <div class="stab_links">
+      <a href="javascript:;" class="view_history">Stabilate History</a>
+      <a href="javascript:;" class="view_full_history">Stabilate Full History</a>
+      <a href="javascript:;" class="view_form">View Generated Form</a>
+      <a href="javascript:;" class="view_scans">View Stabilate Scans</a>
+   </div>
    <div class='left'>
       <div class="control-group">
-         <label class="control-label" for="stabilateNo">Stabilate&nbsp;&nbsp;<a href="javascript:;" class="view_form">Form</a></label>
+         <label class="control-label" for="stabilateNo"><img class='mandatory' src='images/mandatory.gif' alt='Required' />&nbsp;&nbsp;Stabilate</label>
          <div class="stab_input controls">
-            <input type="text" id="stabilateNo" placeholder="Stabilate" class='input-medium'>&nbsp;&nbsp;<img class='mandatory' src='images/mandatory.gif' alt='Required' />
+            <input type="text" id="stabilateNo" placeholder="Stabilate" class='input-medium'>&nbsp;&nbsp;<img class='delete_stab' src='images/delete.png' alt='Required' />
          </div>
-         <div class="stab_links"><a href="javascript:;" class="view_history">History</a><br /><a href="javascript:;" class="view_full_history">Full History</a></div>
       </div>
       <div class="control-group">
          <label class="control-label" for="hostId">Host</label>
@@ -817,25 +822,26 @@ class Stabilates extends DBase {
    </ul>
 </div>
 
-<div id="saved_passages">
-   Entered Passages
+<div id='passage_n_locations'>
+   <div id="saved_passages">Entered Passages</div>
+   <div id="stabilate_locations">
+      <div class="control-group left" style="margin-left: 0px;">
+         <label class="text-center" for="all_locations">All Locations</label>
+         <div class="controls" id="all_locations"></div>
+      </div>
+      <div id="selection_arrows" class="left"></div>
+      <div class="control-group left">
+         <label class="text-center" for="selected_locations">Selected Locations</label>
+         <div class="controls" id="selected_locations"></div>
+      </div>
+      <div class="control-group left" id="stab_loc_actions">
+         <div><button class="btn btn-medium btn-primary stab_loc_save" type="button">Save</button></div>
+         <div><button class="btn btn-medium btn-primary stab_loc_cancel" type="button">Cancel</button></div>
+      </div>
+   </div>
 </div>
 
-<div id="stabilate_locations">
-   <div class="control-group left" style="margin-left: 150px;">
-      <label class="text-center" for="all_locations">All Locations</label>
-      <div class="controls" id="all_locations"></div>
-   </div>
-   <div id="selection_arrows" class="left"></div>
-   <div class="control-group left">
-      <label class="text-center" for="selected_locations">Selected Locations</label>
-      <div class="controls" id="selected_locations"></div>
-   </div>
-   <div class="control-group left" id="stab_loc_actions">
-      <div><button class="btn btn-medium btn-primary stab_loc_save" type="button">Save Locations</button></div>
-      <div><button class="btn btn-medium btn-primary stab_loc_cancel" type="button">Cancel</button></div>
-   </div>
-</div>
+<div id='blue_book_info'></div>
 </div>
 
 <fieldset class='preservation'>
@@ -942,16 +948,19 @@ $(document).ready(function () {
    $('#inoculumTypeId').live('change', Stabilates.inoculumTypeChange);
    $("#synonym_list").jqxListBox({ source: [], width: 200, height: 150, theme: Main.theme });
    $('#synonym').keyup(Stabilates.addSynonym);
-   Stabilates.initiatePassageDetails();
 
    $('.view_form').click(Stabilates.viewYellowForm);
    $('.view_history').click(Stabilates.viewStabilateHistory);
    $('.view_full_history').click(Stabilates.viewStabilateFullHistory);
    $('.sel_arrow span').live('click', Stabilates.buttonClicked);
+   $('.stab_input .delete_stab').live('click', Stabilates.buttonClicked);
+   $('#saved_passages .delete_pass').live('click', Stabilates.buttonClicked);
    $('#passages_tab').jqxTabs({ width: '100%', height: 310, position: 'top', theme: Main.theme });
    $('#passages_tab').live('selecting', function (event) {
-      if(event.args.item === 1) Stabilates.initiatePassageDetails(Main.curStabilateId);     //we have selected the passages tab... reload the data
-      else if(event.args.item === 2) Stabilates.initiateStabilateLocations(Main.curStabilateId);
+      if(event.args.item === 1){     //we have selected the passages info and the location info... reload the data
+         Stabilates.initiatePassageDetails(Main.curStabilateId);
+         Stabilates.initiateStabilateLocations(Main.curStabilateId);
+      }
    });
    $('#stabilateNo').focus();
    Main.passagesValidation = <?php echo json_encode(Config::$passageValidation); ?>;
