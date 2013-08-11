@@ -280,6 +280,10 @@ dl{
    margin: 30px 20px 10px 20px;
    border-bottom: none;
 }
+
+#blue_book_info #referenceTitle{
+   width: 400px;
+}
 /**************************Bootstrap changes***************************/
 
 #yellow_form table{
@@ -441,16 +445,44 @@ line.link {
    cursor: pointer;
 }
 
-#stabilates #stab_loc_actions{
+#stabilates #stab_loc_actions, #blue_book_info #bb_extra_actions{
    margin: 90px 0px 0px 0px;
    text-align: center;
 }
 
-#stabilates #stab_loc_actions button{
+#stabilates #stab_loc_actions button, #bb_extra_actions button{
    margin: 5px;
    width: 54px;
 }
 
 .delete_pass{
    margin: 3px;
+}
+
+#blue_book_info #susceptible_hosts, #blue_book_info #related_stabilates, #blue_book_info #references{
+   width: 240px;
+   height: 245px;
+   margin: 10px 5px;
+   padding-right: 5px;
+   border-right: 0.5px #D5D5D5 dotted;
+}
+
+#blue_book_info #related_stabilates{
+}
+
+#blue_book_info #references{
+   width: 455px;
+}
+
+#blue_book_info .header{
+   border-bottom: 0.5px #D5D5D5 dotted;
+   margin-bottom: 5px;
+   font-weight: bold;
+}
+
+.list_item_image{
+   width: 14px;
+   height: 14px;
+   margin-right: 5px;
+   cursor: pointer;
 }

@@ -5,7 +5,7 @@ var Main = {
 };
 
 var Stabilates = {
-   submitLogin: function(){
+    submitLogin: function(){
        var userName = $('[name=username]').val(), password = $('[name=password]').val();
        if(userName === ''){
           alert('Please enter your username!');
@@ -23,6 +23,11 @@ var Stabilates = {
        return true;
     },
 
+    /**
+     * Handles all the actions of clicking a button
+     *
+     * @returns {unresolved}
+     */
     buttonClicked: function(){
        if(/passage_save/.test(this.className)){
          if($('#stabilateNo').val() === ''){
@@ -74,8 +79,13 @@ var Stabilates = {
           Stabilates.clearPassagesData();
        }
        else if(/arrow\-/.test(this.className)) Stabilates.addRemoveStabStorageLocations(this.className);
+       else if(/bb_extra_save/.test(this.className)) Stabilates.saveStabExtras();
+       else if(/bb_extra_cancel/.test(this.className)) Stabilates.cancelStabExtras();
        else if(/stab_loc_save/.test(this.className)) Stabilates.saveStabStorageLocations();
-       else if(/stabilate_save/.test(this.className)){ Stabilates.saveStabilate(); }
+       else if(/stabilate_save/.test(this.className)) Stabilates.saveStabilate();
+       else if(/delete_stab_host/.test(this.className)) Stabilates.deleteSusceptibleHost(this);
+       else if(/delete_stab_relative/.test(this.className)) Stabilates.deleteRelatedStabilate(this);
+       else if(/delete_stab_reference/.test(this.className)) Stabilates.deleteReference(this);
        else if(/stabilate_cancel/.test(this.className)){
           Stabilates.clearStabilatesData();
           Stabilates.clearPassagesData();
@@ -674,6 +684,11 @@ var Stabilates = {
       });
    },
 
+   /**
+    * View the stabilate history
+    *
+    * @returns {unresolved}
+    */
    viewStabilateHistory: function(){
       if(Main.curStabilate.id === undefined){
          Notification.show({create:true, hide:true, updateText:false, text:'Error! Search for a stabilate first before requesting for its form.', error:true});
@@ -711,6 +726,11 @@ var Stabilates = {
       });
    },
 
+   /**
+    * View the full history of the stabilate. This includes all the stabilates which were derived from the earliest stabilate
+    *
+    * @returns {unresolved}
+    */
    viewStabilateFullHistory: function(){
       if(Main.curStabilate.id === undefined){
          Notification.show({create:true, hide:true, updateText:false, text:'Error! Search for a stabilate first before requesting for its form.', error:true});
@@ -739,5 +759,240 @@ var Stabilates = {
             return;
          }
       });
+   },
+
+   /***
+    * Initiates the extra details in the blue book
+    *
+    * @param   integer  stabilateId    The current stabilate id that we want the extra information
+    * @returns {undefined}
+    */
+   initiateBlueBookExtras: function(stabilateId){
+      var params = sprintf('stabilate_no=%s&stabilate_id=%s&action=stabilate_bb_extras',$('#stabilateNo').val(), stabilateId), sdata;
+      Notification.show({create:true, hide:false, updateText:false, text:'Fetching the stabilates blue book extras...', error:false});
+      $.ajax({
+         type:"POST", url:'mod_ajax.php?page=stabilates&do=browse', dataType:'json', async: false, data: params,
+         error:function(){
+            Notification.show({create:false, hide:true, updateText:true, text:'There was an error while communicating with the server', error:true});
+            return false;
+         },
+         success: function(data){
+            var mssg;
+            if(data.error) mssg = data.data+ ' Please try again.';
+            else mssg = 'Stabilate data fetched succesfully';
+            Notification.show({create:false, hide:true, updateText:true, text:mssg, error:data.error});
+            sdata = data;
+         }
+      });
+       Main.curStabilate.susceptibleHost = []; Main.curStabilate.relatedStabilates = []; Main.curStabilate.references = [];
+
+       var settings = {multiple: true, width: '230px', height: '150px', enableHover: false, enableSelection: false, theme: Main.theme, equalItemsWidth:true};
+       settings['source'] = sdata.susceptibleHosts;
+       $("#susceptibleHostList").jqxListBox(settings);
+       settings['source'] = sdata.relatedStabilates;
+       $("#relatedStabilatesList").jqxListBox(settings);
+       settings['source'] = sdata.addedReferences; settings['width'] = '440px'; settings['height'] = '150px';
+       $("#addedReferences").jqxListBox(settings);
+       $('#susceptibleHost').focus();
+
+       $("#susceptibleHostList").on('select', function(event){
+          alert(event);
+       });
+
+       $.each(sdata.susceptibleHosts, function(){ Main.curStabilate.susceptibleHost[Main.curStabilate.susceptibleHost.length] = {name: this.value}; });
+       $.each(sdata.relatedStabilates, function(){ Main.curStabilate.relatedStabilates[Main.curStabilate.relatedStabilates.length] = {name: this.value}; });
+       $.each(sdata.addedReferences, function(){ Main.curStabilate.references[Main.curStabilate.references.length] = {name: this.value}; });
+   },
+
+   /**
+    * Add a host to a list of susceptible hosts
+    * @returns {undefined}
+    */
+   addRelatedStabilates: function(value, data, curValue){
+      var stabilateName = '';
+      if(data === undefined){
+         //we have a key pressed
+         if(value.which !== 13) return;
+         //we have a stabilate name... so add it to the list
+         stabilateName = $('#relatedStabilates').val();
+      }
+      else{         //we are searching for the stabilate... and we have found one
+         stabilateName = value;
+         return;
+      }
+
+      if(Main.curStabilate.relatedStabilates === undefined) Main.curStabilate.relatedStabilates = [];
+      var relatedStabilates = [], add = true, content;
+      $.each(Main.curStabilate.relatedStabilates, function(){
+         if(this.name === stabilateName) add = false;
+         content = sprintf("<div><img class='list_item_image delete_stab_relative relative_%s' src='images/delete_small.png'>%s</div>", this.name, this.name);
+         relatedStabilates[relatedStabilates.length] = {html: content, value:this.name};
+      });
+      if(add === true){
+         Main.curStabilate.relatedStabilates[Main.curStabilate.relatedStabilates.length] = {name: stabilateName};
+         content = sprintf("<div><img class='list_item_image delete_stab_relative relative_%s' src='images/delete_small.png'>%s</div>", stabilateName, stabilateName);
+         relatedStabilates[relatedStabilates.length] = {html: content, value:stabilateName};
+      };
+
+      $("#relatedStabilatesList").jqxListBox({ source: relatedStabilates });
+      $('#relatedStabilates').val('').focus();
+   },
+
+   /**
+    * Adds a susceptible host to the list of susceptible hosts
+    *
+    * @param   object   event    An object with the key up event
+    * @returns {unresolved}
+    */
+   addSusceptibleHosts: function(event){
+      if(event.which !== 13) return;
+      var host = $('#susceptibleHost').val();
+      if(Main.curStabilate.susceptibleHost === undefined) Main.curStabilate.susceptibleHost = [];
+      var source = [], add = true;
+      $.each(Main.curStabilate.susceptibleHost, function(){
+         if(this.name === host) add = false;
+         content = sprintf("<div><img class='list_item_image delete_stab_host host_%s' src='images/delete_small.png'>%s</div>", this.name, this.name);
+         source[source.length] = {html:content, value:this.name};
+      });
+      if(add === true){
+         content = sprintf("<div><img class='list_item_image delete_stab_host host_%s' src='images/delete_small.png'>%s</div>", host, host);
+         source[source.length] = {html:content, value:host};
+         Main.curStabilate.susceptibleHost[Main.curStabilate.susceptibleHost.length] = {name: host};
+      }
+
+      $("#susceptibleHostList").jqxListBox({ source: source });
+      $('#susceptibleHost').val('').focus();
+   },
+
+   /**
+    * Adds a reference to the stabilate
+    *
+    * @param   object   event    An object with the key up event
+    * @returns {undefined}
+    */
+   addReferences: function(event){
+      if(event.which !== 13) return;
+      var reference = $('#referenceTitle').val(), content;
+      if(Main.curStabilate.references === undefined) Main.curStabilate.references = [];
+      var references = [], add = true;
+      $.each(Main.curStabilate.references, function(){
+         if(this.name === references) add = false;
+         content = sprintf("<div><img class='list_item_image delete_stab_reference reference_%s' src='images/delete_small.png'>%s</div>", this.name, this.name);
+         references[references.length] = {html:content, value: this.name };
+      });
+      if(add === true){
+         content = sprintf("<div><img class='list_item_image delete_stab_reference reference_%s' src='images/delete_small.png'>%s</div>", reference, reference);
+         references[references.length] = {html:content, value: reference };
+         Main.curStabilate.references[Main.curStabilate.references.length] = {name: reference};
+      }
+
+      $("#addedReferences").jqxListBox({ source: references });
+      $('#referenceTitle').val('').focus();
+   },
+
+   /**
+    * Saves the extras as entered
+    *
+    * @returns {undefined}
+    */
+   saveStabExtras: function(){
+      if(Main.curStabilateId === undefined){
+         Notification.show({create:true, hide:true, updateText:false, text:'Please select a stabilate first before saving the extras.', error:true});
+         return;
+      }
+      //check that we have at least something to save
+      if(Main.curStabilate.references === undefined && Main.curStabilate.susceptibleHost === undefined && Main.curStabilate.relatedStabilates === undefined){
+         Notification.show({create:true, hide:true, updateText:false, text:'Please enter at least a host a stabilate or a reference to save.', error:true});
+         return;
+      }
+
+      //all is well, lets send this data to the database
+      var params = sprintf('stabilate_id=%s&references=%s&susceptible_hosts=%s&related_stabilates=%s&action=save_extras',
+         Main.curStabilateId, escape($.toJSON(Main.curStabilate.references)), escape($.toJSON(Main.curStabilate.susceptibleHost)), escape($.toJSON(Main.curStabilate.relatedStabilates)));
+      Notification.show({create:true, hide:false, updateText:false, text:'Saving the extras...', error:false});
+      $.ajax({
+         type:"POST", url:'mod_ajax.php?page=stabilates&do=browse', dataType:'json', async: false, data: params,
+         error:function(){
+            Notification.show({create:false, hide:true, updateText:true, text:'There was an error while communicating with the server', error:true});
+            return false;
+         },
+         success: function(data){
+            var mssg;
+            if(data.error) mssg = data.data+ ' Please try again.';
+            else mssg = 'Stabilate extras succesfully';
+            Notification.show({create:false, hide:true, updateText:true, text:mssg, error:data.error});
+            $('#susceptibleHost').focus();
+         }
+      });
+   },
+
+   /**
+    * Cancels/Clears all the extras
+    *
+    * @returns {undefined}
+    */
+   cancelStabExtras: function(){},
+
+   /**
+    * Deletes a susceptible host from the list
+    */
+   deleteSusceptibleHost: function(that){
+      var host = /host_(.+)$/g.exec(that.className);
+      var item = $("#susceptibleHostList").jqxListBox('getItemByValue', host[1]);
+      $("#susceptibleHostList").jqxListBox('removeAt', item.index);
+
+      //remove from the object
+      var hosts = [], content, tmp = [];
+      $.each(Main.curStabilate.susceptibleHost, function(i, that){
+         if(that.name !== host[1]){
+            content = sprintf("<div><img class='list_item_image delete_stab_host host_%s' src='images/delete_small.png'>%s</div>", that.name, that.name);
+            hosts[hosts.length] = {html:content, value:that.name};
+            tmp[tmp.length] = {name: that.name};
+         }
+      });
+      Main.curStabilate.susceptibleHost = tmp;
+      $("#susceptibleHostList").jqxListBox({source: hosts});
+   },
+
+   /**
+    * Deletes a reference from the list
+    */
+   deleteReference: function(that){
+      var reference = /reference_(.+)$/g.exec(that.className);
+      var item = $("#addedReferences").jqxListBox('getItemByValue', reference[1]);
+      $("#addedReferences").jqxListBox('removeAt', item.index);
+
+      //remove from the object
+      var references = [], content, tmp = [];
+      $.each(Main.curStabilate.references, function(i, that){
+         if(that.name !== reference[1]){
+            content = sprintf("<div><img class='list_item_image delete_stab_reference reference_%s' src='images/delete_small.png'>%s</div>", that.name, that.name);
+            references[references.length] = {html:content, value:that.name};
+            tmp[tmp.length] = {name: that.name};
+         }
+      });
+      Main.curStabilate.references = tmp;
+      $("#addedReferences").jqxListBox({source: references});
+   },
+
+   /**
+    * Deletes a relative stabilate from the list
+    */
+   deleteRelatedStabilate: function(that){
+      var relative = /relative_(.+)$/g.exec(that.className);
+      var item = $("#relatedStabilatesList").jqxListBox('getItemByValue', relative[1]);
+      $("#relatedStabilatesList").jqxListBox('removeAt', item.index);
+
+      //remove from the object
+      var relatives = [], content, tmp = [];
+      $.each(Main.curStabilate.relatedStabilates, function(i, that){
+         if(that.name !== relative[1]){
+            content = sprintf("<div><img class='list_item_image delete_stab_relative relative_%s' src='images/delete_small.png'>%s</div>", that.name, that.name);
+            relatives[relatives.length] = {html:content, value:that.name};
+            tmp[tmp.length] = {name: that.name};
+         }
+      });
+      Main.curStabilate.relatedStabilates = tmp;
+      $("#relatedStabilatesList").jqxListBox({source: relatives});
    }
 };

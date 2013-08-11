@@ -108,6 +108,7 @@ class Stabilates extends DBase {
          if(isset($_GET['query'])) $this->FetchData();
          elseif(OPTIONS_REQUESTED_ACTION == 'save') $this->SaveStabilates();
          elseif(OPTIONS_REQUESTED_ACTION == 'save_passage') $this->SavePassages();
+         elseif(OPTIONS_REQUESTED_ACTION == 'save_extras') $this->SaveStabilateExtras();
          elseif(OPTIONS_REQUESTED_ACTION == 'list_stabilates') $this->FetchData();
          elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_locations') $this->FetchData();
          elseif(OPTIONS_REQUESTED_ACTION == 'save_stabilate_locations') $this->SaveStabilateLocations();
@@ -115,8 +116,10 @@ class Stabilates extends DBase {
          elseif(OPTIONS_REQUESTED_ACTION == 'yellow_form') $this->CreateStabilatesYellowForm();
          elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_history') $this->StabilateHistory();
          elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_full_history') $this->StabilateFullHistory();
+         elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_bb_extras') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'browse') $this->BrowseStabilates();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'fetch') $this->FetchData();
+         elseif(OPTIONS_REQUESTED_SUB_MODULE == 'susceptible_hosts') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'passages') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'stats') $this->StabilatesStats();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'list') $this->ListStabilates();
@@ -754,8 +757,8 @@ class Stabilates extends DBase {
 <div id="passages_tab">
  <ul>
    <li style="margin-left: 30px;">Passage Entry</li>
-   <li>Saved Passages</li>
-   <li>Stabilate Locations</li>
+   <li>Passages and Locations</li>
+   <li>BB Extra</li>
 </ul>
 <div class='passages'>
    <ul class="entered_passages"></ul>
@@ -841,7 +844,61 @@ class Stabilates extends DBase {
    </div>
 </div>
 
-<div id='blue_book_info'></div>
+<div id='blue_book_info'>
+   <div id="susceptible_hosts" class="left">
+      <div class="header">Susceptible Hosts</div>
+      <div class="control-group">
+         <label class="control-label" for="susceptibleHost" style='margin-left:5px;width:auto;'>Host</label>
+         <div class="controls" style='margin-left:45px;'>
+            <input type="text" id="susceptibleHost" placeholder="Host" class='input-medium'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="text-center">Susceptible Hosts</label>
+         <div class="controls" style='margin-left:5px;'>
+            <div id="susceptibleHostList"></div>
+         </div>
+      </div>
+   </div>
+
+   <div id='related_stabilates' class="left">
+      <div class="header">Related Stabilates</div>
+      <div class="control-group">
+         <label class="control-label" for="relatedStabilates" style='margin-left:5px;width:auto;'>Stabilate</label>
+         <div class="controls" style='margin-left:75px;'>
+            <input type="text" id="relatedStabilates" placeholder="Stabilate" class='input-medium'>
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="text-center">Related Stabilates</label>
+         <div class="controls" style='margin-left:5px;'>
+            <div id="relatedStabilatesList"></div>
+         </div>
+      </div>
+   </div>
+
+   <div id='references' class="left">
+      <div class="header">References</div>
+      <div class="control-group">
+         <label class="control-label" for="referenceTitle" style='margin-left:15px;width:auto;'>Title</label>
+         <div class="controls" style='margin-left:55px;'>
+            <input type="text" id="referenceTitle" placeholder="Title" width='450px'>
+         </div>
+      </div>
+      <div class="control-group" style='margin-bottom:0px;'>
+         <label class="text-center">References</label>
+         <div class="controls" style='margin:0px 5px;'>
+            <div id="referenceFile"></div>
+         </div>
+      </div>
+      <div id="addedReferences"></div>
+   </div>
+
+   <div class="control-group left" id="bb_extra_actions">
+      <div><button class="btn btn-medium btn-primary bb_extra_save" type="button">Save</button></div>
+      <div><button class="btn btn-medium btn-primary bb_extra_cancel" type="button">Cancel</button></div>
+   </div>
+</div>
 </div>
 
 <fieldset class='preservation'>
@@ -948,18 +1005,25 @@ $(document).ready(function () {
    $('#inoculumTypeId').live('change', Stabilates.inoculumTypeChange);
    $("#synonym_list").jqxListBox({ source: [], width: 200, height: 150, theme: Main.theme });
    $('#synonym').keyup(Stabilates.addSynonym);
+   $('#susceptibleHost').keyup(Stabilates.addSusceptibleHosts);
+   $('#relatedStabilates').keyup(Stabilates.addRelatedStabilates);
+   $('#referenceTitle').keyup(Stabilates.addReferences);
 
    $('.view_form').click(Stabilates.viewYellowForm);
    $('.view_history').click(Stabilates.viewStabilateHistory);
    $('.view_full_history').click(Stabilates.viewStabilateFullHistory);
    $('.sel_arrow span').live('click', Stabilates.buttonClicked);
+   $('.list_item_image').live('click', Stabilates.buttonClicked);
    $('.stab_input .delete_stab').live('click', Stabilates.buttonClicked);
    $('#saved_passages .delete_pass').live('click', Stabilates.buttonClicked);
-   $('#passages_tab').jqxTabs({ width: '100%', height: 310, position: 'top', theme: Main.theme });
+   $('#passages_tab').jqxTabs({ width: '100%', height: 310, position: 'top', theme: Main.theme, selectedItem: 2, keyboardNavigation: false });
    $('#passages_tab').live('selecting', function (event) {
       if(event.args.item === 1){     //we have selected the passages info and the location info... reload the data
          Stabilates.initiatePassageDetails(Main.curStabilateId);
          Stabilates.initiateStabilateLocations(Main.curStabilateId);
+      }
+      else if(event.args.item === 2){
+         Stabilates.initiateBlueBookExtras(Main.curStabilateId);
       }
    });
    $('#stabilateNo').focus();
@@ -969,10 +1033,16 @@ $(document).ready(function () {
 </script>
 <?php
       $this->AutoCompleteFiles();
-      $settings = array('inputId' => 'stabilateNo', 'reqModule' => 'stabilates', 'reqSubModule' => 'browse', 'selectFunction' => 'Stabilates.fetchStabilatesData');
+      $settings = array('inputId' => 'stabilateNo', 'reqModule' => 'stabilates', 'reqSubModule' => 'search_stabilates', 'selectFunction' => 'Stabilates.fetchStabilatesData');
       $this->InitiateAutoComplete($settings);
 
-      $settings = array('inputId' => 'parent_stabilate', 'reqModule' => 'stabilates', 'reqSubModule' => 'browse');
+      $settings = array('inputId' => 'parent_stabilate', 'reqModule' => 'stabilates', 'reqSubModule' => 'search_stabilates');
+      $this->InitiateAutoComplete($settings);
+
+      $settings = array('inputId' => 'susceptibleHost', 'reqModule' => 'stabilates', 'reqSubModule' => 'susceptible_hosts', 'selectFunction' => 'Stabilates.updateSusceptibleHosts');
+      $this->InitiateAutoComplete($settings);
+
+      $settings = array('inputId' => 'relatedStabilates', 'reqModule' => 'stabilates', 'reqSubModule' => 'search_stabilates', 'selectFunction' => 'Stabilates.addRelatedStabilates');
       $this->InitiateAutoComplete($settings);
    }
 
@@ -982,16 +1052,36 @@ $(document).ready(function () {
    private function FetchData(){
       $vals = array();
       if(isset($_GET['query'])){
-         $query = 'select id, stab_no from stabilates where stab_no like :query';
+         if(OPTIONS_REQUESTED_SUB_MODULE == 'search_stabilates') $query = 'select id, stab_no as data from stabilates where stab_no like :query';
+         elseif(OPTIONS_REQUESTED_SUB_MODULE == 'susceptible_hosts') $query = 'select id, host_name as data from tryps_susceptible_hosts where host_name like :query';
+
          $res = $this->Dbase->ExecuteQuery($query, array('query' => "%{$_GET['query']}%"));
          if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
          $suggestions = array();
          foreach($res as $t){
-            $suggestions[] = $t['stab_no'];
+            $suggestions[] = $t['data'];
             $data[] = $t;
          }
          $data = array('error' => false, 'query' => $_GET['query'], 'suggestions' => $suggestions, 'data' => $data);
          die(json_encode($data));
+      }
+      elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_bb_extras' && OPTIONS_REQUESTED_SUB_MODULE == 'browse'){
+         //get all the susceptible hosts
+         $query = 'select concat(\'<div><img class="list_item_image delete_stab_host host_\', b.host_name,\'" src="images/delete_small.png">\', b.host_name,\'</div>\') as html, b.host_name as value from tryps_stabilates_susceptible_hosts as a inner join tryps_susceptible_hosts as b on a.tryps_susceptible_host_id = b.id where a.stabilate_id = :stabilate_id';
+         $susceptible_hosts = $this->Dbase->ExecuteQuery($query, array('stabilate_id' => $_POST['stabilate_id']));
+         if($susceptible_hosts == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+
+         //get the related stabilates
+         $query = 'select concat(\'<div><img class="list_item_image delete_stab_relative relative_\', if(related_stabilate_name is null, b.stab_no, related_stabilate_name),\'" src="images/delete_small.png">\', if(related_stabilate_name is null, b.stab_no, related_stabilate_name),\'</div>\') as html, if(related_stabilate_name is null, b.stab_no, related_stabilate_name) as value from tryps_related_stabilates as a left join stabilates as b on a.related_stabilate_id = b.id left join stabilates as c on a.related_stabilate_id = c.id where a.stabilate_id = :stabilate_id';
+         $related_stabilates = $this->Dbase->ExecuteQuery($query, array('stabilate_id' => $_POST['stabilate_id']));
+         if($related_stabilates == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+
+         //get the references
+         $query = 'select concat(\'<div><img class="list_item_image delete_stab_reference reference_\', article_title,\'" src="images/delete_small.png">\', article_title,\'</div>\') as html, article_title as value from tryps_references where stabilate_id = :stabilate_id';
+         $references = $this->Dbase->ExecuteQuery($query, array('stabilate_id' => $_POST['stabilate_id']));
+         if($references == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+
+         die('{"error":false, "susceptibleHosts":'. json_encode($susceptible_hosts) .', "relatedStabilates": '.json_encode($related_stabilates) .', "addedReferences": '.json_encode($references).'}');
       }
       elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_locations' && OPTIONS_REQUESTED_SUB_MODULE == 'browse'){
          if(!isset($_POST['stabilate_no'])) die('{"data":'. json_encode(array()) .'}');
@@ -1058,10 +1148,7 @@ $(document).ready(function () {
          if(OPTIONS_REQUESTED_SUB_MODULE == 'country_stats') $query = 'SELECT country_name as s_name, count(*) as count FROM `stabilates` as a inner join origin_countries as b on a.country=b.id group by country_name';
 
          $res = $this->Dbase->ExecuteQuery($query);
-         if($res == 1){
-            $this->Dbase->RollBackTrans();
-            die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
-         }
+         if($res == 1) $this->RollBackTransAndDie();
          header("Content-type: application/csv");
          $count = count($res);
          for($i = 0; $i < $count; $i++){
@@ -1070,10 +1157,13 @@ $(document).ready(function () {
          }
          die();
       }
-      $res = $this->Dbase->ExecuteQuery($query, $vals);
-      if($res != 1){
-         die(json_encode(array('error' => false, 'data' => $res)));
+      elseif(OPTIONS_REQUESTED_SUB_MODULE == 'susceptible_hosts'){
+         $query = 'select id, host_name from tryps_susceptible_hosts where host_name like :host_name order by host_name';
+         $vals = array('host_name' => $_GET['query']);
       }
+
+      $res = $this->Dbase->ExecuteQuery($query, $vals);
+      if($res != 1) die(json_encode(array('error' => false, 'data' => $res)));
       else die(json_encode(array('error' => false, 'data' => $this->Dbase->lastError)));
    }
 
@@ -1139,10 +1229,7 @@ $(document).ready(function () {
          $query = 'insert into stabilates('. implode(', ', $insert_cols) .') values('. implode(', ', $insert_vals) .')';
       }
       $res = $this->Dbase->UpdateRecords($query, $vals, $lockQuery);
-      if($res == 1){
-         $this->Dbase->RollBackTrans();
-         die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
-      }
+      if($res == 1) $this->RollBackTransAndDie();
 
       if(!isset($dt['id'])){
          $stabilateId = $this->Dbase->ExecuteQuery('select LAST_INSERT_ID() as id');
@@ -1160,10 +1247,7 @@ $(document).ready(function () {
          else{/*Its already in the database... why edit it????*/}
 
          $res = $this->Dbase->UpdateRecords($query, $vals);
-         if($res == 1){
-            $this->Dbase->RollBackTrans();
-            die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
-         }
+         if($res == 1) $this->RollBackTransAndDie();
       }
 
       //commit the transaction and unlock the tables
@@ -1214,10 +1298,7 @@ $(document).ready(function () {
       if(!isset($dt['parentStabilateId']) || $dt['parentStabilateId'] == '') die(json_encode(array('error' => true, 'data' => 'Error! Please enter the parent stabilate for this passage.')));
       $query = 'select id, stab_no from stabilates where id=:id';
       $res = $this->Dbase->ExecuteQuery($query, array('id' => $dt['parentStabilateId']));
-      if($res == 1){
-         $this->Dbase->RollBackTrans();
-         die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
-      }
+      if($res == 1) $this->RollBackTransAndDie();
       $parentStabilate = $res[0]['id'];
 
 
@@ -1227,40 +1308,28 @@ $(document).ready(function () {
          //ensure that the stabilate selected is in the database
          $query = 'select stab_no from stabilates where id=:id';
          $res = $this->Dbase->ExecuteQuery($query, array('id' => $dt['inoculumSourceId']));
-         if($res == 1){
-            $this->Dbase->RollBackTrans();
-            die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
-         }
+         if($res == 1) $this->RollBackTransAndDie();
          $inoculum_ref = $res[0]['stab_no'];
       }
       elseif($dt['inoculumSource'] == 'Passage'){
          //ensure that we have the passage that is being referred to
          $query = 'select passage_no from passages where id=:id';
          $res = $this->Dbase->ExecuteQuery($query, array('id' => $dt['inoculumSourceId']));
-         if($res == 1){
-            $this->Dbase->RollBackTrans();
-            die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
-         }
+         if($res == 1) $this->RollBackTransAndDie();
          $inoculum_ref = "Passage {$res[0]['passage_no']}";
       }
       elseif($dt['inoculumSource'] == 'Host'){
          //ensure that the stabilate selected is in the database
          $query = 'select source_name from sources where id=:id';
          $res = $this->Dbase->ExecuteQuery($query, array('id' => $dt['inoculumSourceId']));
-         if($res == 1){
-            $this->Dbase->RollBackTrans();
-            die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
-         }
+         if($res == 1) $this->RollBackTransAndDie();
          $inoculum_ref = $res[0]['source_name'];
       }
       else{
          //get the inoculum name from the db and append the added info.
          $query = 'select inoculum_name from inoculum where id=:id';
          $res = $this->Dbase->ExecuteQuery($query, array('id' => $dt['inoculumTypeId']));
-         if($res == 1){
-            $this->Dbase->RollBackTrans();
-            die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
-         }
+         if($res == 1) $this->RollBackTransAndDie();
          $inoculum_ref = $dt['inoculumSourceId'];
       }
 
@@ -1286,18 +1355,11 @@ $(document).ready(function () {
          $query = 'insert into passages('. implode(', ', $insert_cols) .') values('. implode(', ', $insert_vals) .')';
       }
       $res = $this->Dbase->UpdateRecords($query, $vals, $lockQuery);
-      if($res == 1){
-         $this->Dbase->RollBackTrans();
-         die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
-      }
+      if($res == 1) $this->RollBackTransAndDie();
       //commit the transaction and unlock the tables
-      if( !$this->Dbase->CommitTrans() ) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+      if( !$this->Dbase->CommitTrans() ) $this->RollBackTransAndDie();
       $res = $this->Dbase->ExecuteQuery("Unlock tables");
       if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
-
-      //we are all good
-      $this->Dbase->RollBackTrans();
-      die(json_encode(array('error' => false, 'data' => 'Data saved well')));
    }
 
    /**
@@ -1689,14 +1751,145 @@ $(document).ready(function () {
             $vals = array('stabilate_id' => NULL, 'updated_by' => $_SESSION['user_id'], 'update_time' => date('Y-m-d H:i:s'), 'id' => $loc['id']);
 //            var_dump($vals); die();
             $res = $this->Dbase->ExecuteQuery($updateQuery, $vals);
-            if($res == 1){
-               $this->Dbase->RollBackTrans();
-               die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
-            }
+            if($res == 1) $this->RollBackTransAndDie();
          }
       }
       $this->Dbase->CommitTrans();
       die(json_encode(array('error' => false, 'data' => 'The stabilates positions have been saved succesfully!')));
+   }
+
+   /**
+    * Saves the extra details of the stabilate
+    */
+   private function SaveStabilateExtras(){
+      $references = ($_POST['references'] == 'undefined') ? array() : json_decode($_POST['references'], true);
+      $relatives = ($_POST['related_stabilates'] == 'undefined' || $_POST['related_stabilates'] == '') ? array() : json_decode($_POST['related_stabilates'], true);
+      $hosts = ($_POST['susceptible_hosts'] == 'undefined') ? array() : json_decode($_POST['susceptible_hosts'], true);
+//      if(!is_array($hosts)) $hosts = array($hosts);
+//      $relatives = (NULL) ? array() : (!is_array($relatives)) ? array($relatives) : $relatives;
+//      if(!is_array($references)) $references = array($references);
+//      var_dump($relatives);
+
+      //get all the data which is already entered
+      $query = 'select article_title from tryps_references where stabilate_id = :stabilate_id';
+      $res = $this->Dbase->ExecuteQuery($query, array('stabilate_id' => $_POST['stabilate_id']));
+      if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+      $refs = array();
+      foreach($res as $ref) $refs[] = $ref['article_title'];
+
+      //susceptible hosts
+      $query = 'select b.host_name from tryps_stabilates_susceptible_hosts as a inner join tryps_susceptible_hosts as b on a.tryps_susceptible_host_id =b.id where a.stabilate_id = :stabilate_id';
+      $res = $this->Dbase->ExecuteQuery($query, array('stabilate_id' => $_POST['stabilate_id']));
+      if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+      $e_hosts = array();
+      foreach($res as $host) $e_hosts[] = $host['host_name'];
+
+      $query = 'select host_name from tryps_susceptible_hosts order by host_name';
+      $res = $this->Dbase->ExecuteQuery($query);
+      if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+      $al_hosts = array();
+      foreach($res as $host) $all_hosts[] = $host['host_name'];
+
+      //related stabilates
+      $query = 'select a.related_stabilate_name, b.stab_no from tryps_related_stabilates as a left join stabilates as b on a.related_stabilate_id = b.id where a.stabilate_id = :stabilate_id';
+      $res = $this->Dbase->ExecuteQuery($query, array('stabilate_id' => $_POST['stabilate_id']));
+      if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+      $e_relatives = array();
+      foreach($res as $relative) $e_relatives[] = ($relative['related_stabilate_name'] == NULL) ? $relative['stab_no'] : $relative['related_stabilate_name'];
+
+      //references
+      $query = 'select article_title from tryps_references where stabilate_id = :stabilate_id';
+      $res = $this->Dbase->ExecuteQuery($query, array('stabilate_id' => $_POST['stabilate_id']));
+      if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+      $e_references = array();
+      foreach($res as $reference) $e_references[] = $reference['article_title'];
+
+      //now lets add the data to the db
+      $lockQuery = "lock table tryps_stabilates_susceptible_hosts write, tryps_related_stabilates write, tryps_references write";
+      $this->Dbase->StartTrans();
+      $addHost = 'insert into tryps_susceptible_hosts(host_name) values(:host_name)';
+      $addSusceptibleHost = 'insert into tryps_stabilates_susceptible_hosts(stabilate_id, tryps_susceptible_host_id) values(:stabilate_id, :host_id)';
+
+      //susceptible hosts
+      $a_hosts = array();
+      foreach($hosts as $host){
+         $host = $host['name'];
+         $a_hosts[] = $host;
+         if(in_array($host, $e_hosts)) continue;   //this host has already been associated with the stabilate
+         $hostId = null;
+         if(!in_array($host, $all_hosts)){   //the host is not in the database, so lets enter it
+            $res = $this->Dbase->ExecuteQuery($addHost, array('host_name' => $host));
+            if($res == 1) $this->RollBackTransAndDie();
+            $hostId = $this->Dbase->dbcon->lastInsertId;
+         }
+         if($hostId == null){
+            $res = $this->Dbase->ExecuteQuery('select id from tryps_susceptible_hosts where host_name = :host_name', array('host_name' => $host));
+            if($res == 1) $this->RollBackTransAndDie();
+            $hostId = $res[0]['id'];
+         }
+         $res = $this->Dbase->ExecuteQuery($addSusceptibleHost, array('host_id' => $hostId, 'stabilate_id' => $_POST['stabilate_id']));
+         if($res == 1) $this->RollBackTransAndDie();
+      }
+
+      //relatives
+      $a_relatives = array();
+      foreach($relatives as $relative){
+         $relative = $relative['name'];
+         $a_relatives[] = $relative;
+         if(in_array($relative, $e_relatives)) continue;
+         $query = 'select id from stabilates where stab_no = :stab_no';
+         $res = $this->Dbase->ExecuteQuery($query, array('stab_no' => $relative));
+         if($res == 1) $this->RollBackTransAndDie();
+         $addCol = array('stabilate_id'); $addPdoCol = array(':stabilate'); $addValue = array('stabilate' => $_POST['stabilate_id']);
+         if(count($res) == 0){
+            $addCol[] = 'related_stabilate_name'; $addValue['relative_name'] = $relative; $addPdoCol[] = ':relative_name';
+         }
+         else{
+            $addCol[] = 'related_stabilate_id'; $addValue['relative_id'] = $res[0]['id']; $addPdoCol[] = ':relative_id';
+         }
+
+         $addRelatives = 'insert into tryps_related_stabilates('.  implode(',', $addCol).') values('. implode(',', $addPdoCol) .')';
+         $res = $this->Dbase->ExecuteQuery($addRelatives, $addValue);
+         if($res == 1) $this->RollBackTransAndDie();
+      }
+
+      //references
+      $addReferences = 'insert into tryps_references(stabilate_id, article_title) values(:stabilate_id, :title)';
+      $a_references = array();
+      foreach($references as $reference){
+         $reference = $reference['name'];
+         $a_references[] = $reference;
+         if(in_array($reference, $e_references)) continue;
+         $res = $this->Dbase->ExecuteQuery($addReferences, array('stabilate_id' => $_POST['stabilate_id'], 'title' => $reference));
+         if($res == 1) $this->RollBackTransAndDie();
+      }
+
+      //all is good, now lets start deleting the not entered data
+      $deleteHost = 'delete from tryps_stabilates_susceptible_hosts where stabilate_id = :stabilate_id and tryps_susceptible_host_id not in (select id from tryps_susceptible_hosts where host_name in ("'. implode('","', $a_hosts) .'"))';
+      $res = $this->Dbase->ExecuteQuery($deleteHost, array('stabilate_id' => $_POST['stabilate_id']));
+      if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+
+      //delete the references
+      $deleteReference = 'delete from tryps_references where stabilate_id = :stabilate_id and article_title not in ("'. implode('","', $a_references) .'")';
+      $res = $this->Dbase->ExecuteQuery($deleteReference, array('stabilate_id' => $_POST['stabilate_id']));
+      if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+
+      //delete the relatives
+      $deleteRelatives = 'delete a from tryps_related_stabilates as a left join stabilates as b on a.related_stabilate_id=b.id where a.stabilate_id = :stabilate_id and (a.related_stabilate_name not in ("'. implode('","', $a_relatives) .'") or b.stab_no not in ("'. implode('","', $a_relatives) .'"))';
+      $res = $this->Dbase->ExecuteQuery($deleteRelatives, array('stabilate_id' => $_POST['stabilate_id']));
+      if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+
+      //all is good. commit the trans and die
+      $this->Dbase->CommitTrans();
+      die(json_encode(array('error' => false, 'data' => 'The stabilate has been updated successfully.')));
+   }
+
+   /**
+    * Rolls back a transaction and dies.... sweet!
+    */
+   public function RollBackTransAndDie(){
+      $this->Dbase->RollBackTrans();
+      die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
    }
 }
 ?>
