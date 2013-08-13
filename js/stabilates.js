@@ -181,7 +181,7 @@ var Stabilates = {
              var settings = {
                   serviceUrl:'mod_ajax.php', minChars:2, maxHeight:400, width:150,
                   zIndex: 9999, deferRequestBy: 300, //miliseconds
-                  params: { page: 'stabilates', 'do': 'browse' }, //aditional parameters
+                  params: { page: 'stabilates', 'do': 'search_stabilates' }, //aditional parameters
                   noCache: true, //default is false, set to true to disable caching
                   onSelect: function(value, data){ Main.inoculumSourceId = data.id; },
                   formatResult: Stabilates.fnFormatResult,
@@ -510,6 +510,7 @@ var Stabilates = {
    startPassageEdit: function(event){
       var rowIndex = event.args.rowindex;
       var data = $('#saved_passages').jqxGrid('getrowdata', rowIndex);
+      Main.curPassageId = data.uid;
 
       //fill the passage details with this data
       $.each($('#inoculumTypeId')[0].options, function(i, dt){
@@ -544,7 +545,6 @@ var Stabilates = {
       $('[name=radiation_date]').val();
       $('#passage_actions').html('<li><button class="btn btn-medium btn-primary passage_save" type="button">Update Passage</button></li>\n\
       <li><button class="btn btn-medium btn-primary passage_cancel" type="button">Cancel</button></li>');
-      Main.curPassageId = data.uid;
       Stabilates.colorInputWithData(Main.stabilatesValidation);
       Stabilates.colorInputWithData(Main.passagesValidation);
 
