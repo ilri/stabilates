@@ -1259,6 +1259,9 @@ $(document).ready(function () {
       die(json_encode(array('error' => false, 'data' => 'Data saved well')));
    }
 
+   /**
+    * Saves the passages
+    */
    private function SavePassages(){
       $dt = json_decode($_POST['data'], true);
       $errors = array();
@@ -1360,6 +1363,7 @@ $(document).ready(function () {
       if( !$this->Dbase->CommitTrans() ) $this->RollBackTransAndDie();
       $res = $this->Dbase->ExecuteQuery("Unlock tables");
       if($res == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+      else die(json_encode(array('error' => false, 'data' => 'The data has been saved successfully.')));
    }
 
    /**
