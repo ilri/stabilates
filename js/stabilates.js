@@ -336,10 +336,39 @@ var Stabilates = {
          }
       });
 
-       $("#all_locations").jqxListBox({ source: sdata.all, multiple: true, width: '200px', height: '225px', theme: Main.theme, equalItemsWidth:true });
-       $("#selected_locations").jqxListBox({ source: sdata.allocated, multiple: true, width: '200px', height: '225px', theme: Main.theme, equalItemsWidth:true });
+       $("#all_locations").jqxListBox({ source: sdata.all, multiple: true, width: '200px', height: '210px', theme: Main.theme, equalItemsWidth:true });
+       $("#selected_locations").jqxListBox({ source: sdata.allocated, multiple: true, width: '190px', height: '210px', theme: Main.theme, equalItemsWidth:true });
        $('#selection_arrows').html("<div class='sel_arrow'><span class='arrow-success' data-angle='90' height='36'></span></div><div class='sel_arrow'><span class='arrow-danger' data-angle='270'></span></div>");
        $('.arrow, [class^=arrow-]').bootstrapArrows();
+       $('#searchLocations').val('');
+    },
+
+    /*
+     * Search for the existing locations based on the search criteria
+     *
+     * @param {type} event
+     * @returns {undefined}
+     */
+    searchStabilateLocations: function(event){
+       //check that we have at least 2 characters in the search box to search for
+       var sText = $('#searchLocations').val();
+       if(sText.length < 2) return;
+       //initiate a search for the locations and populate the all locations list box when it returns
+       var params = 'query=' +sText;
+      Notification.show({create:true, hide:false, updateText:false, text:'Searching for locations...', error:false});
+      $.ajax({
+         type:"POST", url:'mod_ajax.php?page=stabilates&do=location_search', dataType:'json', async: false, data: params,
+         error: Notification.serverCommunicationError,
+         success: function(data){
+            var mssg;
+            if(data.error) mssg = data.data+ ' Please try again.';
+            else mssg = 'Stabilate data fetched succesfully';
+            Notification.show({create:false, hide:true, updateText:true, text:mssg, error:data.error});
+            if(!data.error){
+               $("#all_locations").jqxListBox({ source: data.data });
+            }
+         }
+      });
     },
 
     /**
@@ -432,8 +461,8 @@ var Stabilates = {
       var resultsAdapter = new $.jqx.dataAdapter(source);
       if (grid.length === 0) {
          $("#saved_passages").jqxGrid({
-            width: 520,
-            height: 265,
+            width: 530,
+            height: 237,
             source: resultsAdapter,
             theme: Main.theme,
             rowdetails: false,

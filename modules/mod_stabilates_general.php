@@ -117,6 +117,7 @@ class Stabilates extends DBase {
          elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_history') $this->StabilateHistory();
          elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_full_history') $this->StabilateFullHistory();
          elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_bb_extras') $this->FetchData();
+         elseif(OPTIONS_REQUESTED_SUB_MODULE == 'location_search') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'browse') $this->BrowseStabilates();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'fetch') $this->FetchData();
          elseif(OPTIONS_REQUESTED_SUB_MODULE == 'susceptible_hosts') $this->FetchData();
@@ -829,7 +830,7 @@ class Stabilates extends DBase {
    <div id="saved_passages">Entered Passages</div>
    <div id="stabilate_locations">
       <div class="control-group left" style="margin-left: 0px;">
-         <label class="text-center" for="all_locations">All Locations</label>
+         Search: <input type="text" id="searchLocations" class="input-medium" placeholder="Search locations" />
          <div class="controls" id="all_locations"></div>
       </div>
       <div id="selection_arrows" class="left"></div>
@@ -1008,14 +1009,12 @@ $(document).ready(function () {
    $('#susceptibleHost').keyup(Stabilates.addSusceptibleHosts);
    $('#relatedStabilates').keyup(Stabilates.addRelatedStabilates);
    $('#referenceTitle').keyup(Stabilates.addReferences);
+   $('#searchLocations').keyup(Stabilates.searchStabilateLocations);
 
    $('.view_form').click(Stabilates.viewYellowForm);
    $('.view_history').click(Stabilates.viewStabilateHistory);
    $('.view_full_history').click(Stabilates.viewStabilateFullHistory);
-   $('.sel_arrow span').live('click', Stabilates.buttonClicked);
-   $('.list_item_image').live('click', Stabilates.buttonClicked);
-   $('.stab_input .delete_stab').live('click', Stabilates.buttonClicked);
-   $('#saved_passages .delete_pass').live('click', Stabilates.buttonClicked);
+   $('#saved_passages .delete_pass, .stab_input .delete_stab, .list_item_image, .sel_arrow span').live('click', Stabilates.buttonClicked);
    $('#passages_tab').jqxTabs({ width: '100%', height: 310, position: 'top', theme: Main.theme, selectedItem: 2, keyboardNavigation: false });
    $('#passages_tab').live('selecting', function (event) {
       if(event.args.item === 1){     //we have selected the passages info and the location info... reload the data
@@ -1082,6 +1081,15 @@ $(document).ready(function () {
          if($references == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
 
          die('{"error":false, "susceptibleHosts":'. json_encode($susceptible_hosts) .', "relatedStabilates": '.json_encode($related_stabilates) .', "addedReferences": '.json_encode($references).'}');
+      }
+      elseif(OPTIONS_REQUESTED_SUB_MODULE == 'location_search'){     //searches for the locations of the stabilates based on a criteria
+         //get the locations
+         $query = 'select id, box_name, position, stabilate_code, concat(box_name, ">", position, ": ", stabilate_code) as label from tryps_stabilate_locations where stabilate_code like :search';
+         $all = $this->Dbase->ExecuteQuery($query, array('search' => "%{$_POST['query']}%"));
+         if($all == 1) die(json_encode(array('error' => true, 'data' => $this->Dbase->lastError)));
+
+         header("Content-type: application/json");
+         die(json_encode(array('error' => false, 'data' => $all)));
       }
       elseif(OPTIONS_REQUESTED_ACTION == 'stabilate_locations' && OPTIONS_REQUESTED_SUB_MODULE == 'browse'){
          if(!isset($_POST['stabilate_no'])) die('{"data":'. json_encode(array()) .'}');

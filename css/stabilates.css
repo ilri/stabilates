@@ -416,15 +416,19 @@ line.link {
     stroke-width: 1.5px;
 }
 
+#passage_n_locations{
+   padding-top: 5px;
+}
+
 #saved_passages{
    width: 525px;
    float: left;
 }
 
 #stabilate_locations{
-   text-align: center;
-   width: 535px;
-   height: 265px;
+   padding-left: 10px;
+   width: 525px;
+   height: 250px;
    margin-left: 510px;
 }
 
