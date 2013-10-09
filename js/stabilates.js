@@ -105,6 +105,11 @@ var Stabilates = {
        $('#inoculumTypeContainter').html("<span>Select the inoculum type</span>");
     },
 
+    /**
+     * Clears any entered stabilates data that might be there from the previous record.
+     *
+     * @returns {undefined}
+     */
     clearStabilatesData: function(){
        $.each(Main.stabilatesValidation, function(i, data){
           if(data.id !== undefined) $('#'+ data.id).val(data.defaultVal[0]);
