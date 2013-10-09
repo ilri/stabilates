@@ -1,3 +1,7 @@
+stabilates
+A system for managing the historical stabilates developed by ILRI over time
+
+
 GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
